@@ -4,7 +4,7 @@ FROM node:lts-alpine
 
 RUN npm -y -g install serve
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /
 
 # Copy the application files into the working directory
 COPY . .

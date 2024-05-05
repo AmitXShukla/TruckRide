@@ -1,6 +1,6 @@
 # bashCopy code
 # Use the official Node.js image as the base image
-FROM node:lts-alpine
+FROM node:20
 
 RUN npm -y -g install serve
 # Set the working directory in the container

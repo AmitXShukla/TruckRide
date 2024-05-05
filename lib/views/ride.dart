@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../shared/constants.dart';
 import '../models/datamodel.dart';
+import '../models/validators.dart';
+import '../blocs/auth.bloc.dart';
 
 // ignore: must_be_immutable
 class Ride extends StatefulWidget {
@@ -14,32 +16,60 @@ class Ride extends StatefulWidget {
 }
 
 class RideState extends State<Ride> {
-  bool light = true;
+  bool isUserValid = true;
   bool spinnerVisible = false;
   bool messageVisible = false;
   bool _btnEnabled = false;
   String messageTxt = "";
   String messageType = "";
   final _formKey = GlobalKey<FormState>();
-  var model = PromptDataModel(prompt: 'none', res: 'na');
-  final TextEditingController _txtController = TextEditingController();
+  RideModel model = RideModel(
+              objectId: '-',
+              requestor: '-',
+              dttm: '-', from: '-', to: '-', message: '-', 
+              loadType: '-', status: '-', fileURL: '-');
+  final TextEditingController _dttmController = TextEditingController();
+  final TextEditingController _fromController = TextEditingController();
+  final TextEditingController _toController = TextEditingController();
+  final TextEditingController _loadTypeController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
 
   @override
   void initState() {
+    loadAuthState();
     super.initState();
+  }
+
+  void loadAuthState() async {
+    final userState = await authBloc.isSignedIn();
+    setState(() => isUserValid = userState);
+    var username = await authBloc.getUser();
+    // storing user uid/objectId from users class, as a field into message record
+    model.dttm = DateTime.now().toString();
+    model.requestor = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
   }
 
   @override
   void dispose() {
-    _txtController.dispose();
+    _dttmController.dispose();
+    _fromController.dispose();
+    _toController.dispose();
+    _loadTypeController.dispose();
+    _messageController.dispose();
     super.dispose();
   }
 
   toggleSpinner() {
+    // TODO : refactor code
+    //make this as a global reusable widget
+    // define this in constants.dart
     setState(() => spinnerVisible = !spinnerVisible);
   }
 
   showMessage(bool msgVisible, msgType, message) {
+    // TODO : refactor code
+    //make this as a global reusable widget
+    // define this in constants.dart
     messageVisible = msgVisible;
     setState(() {
       messageType = msgType == "error"
@@ -49,26 +79,15 @@ class RideState extends State<Ride> {
     });
   }
 
-    getData(filter, docId) {
-
-    // return qry.limit(10).snapshots();
-  }
-
-  fetchData(String prompt) async {
+    void setRide(RideModel model) async {
     toggleSpinner();
     // ignore: prefer_typing_uninitialized_variables
-    // var userAuth;
-    if (prompt != "") {
-      // userAuth = await authBloc.signInWithGoogle();
-      showMessage(
-          true,
-          "success",
-          prompt);
+    var userData;
+    userData = await authBloc.setRide("Rides", model);
+    if (userData == true) {
+      showMessage(true, "success", "Ride is booked, please keep checking your Inbox for further notifications.");
     } else {
-      showMessage(
-          true,
-          "error",
-          "no text found in Prompt.");
+      showMessage(true, "error", "something went wrong, please contact your Admin.");
     }
     toggleSpinner();
   }
@@ -81,17 +100,16 @@ class RideState extends State<Ride> {
       body: Material(
           child: Container(
               margin: const EdgeInsets.all(20.0),
-              // child: authBloc.isSignedIn()
-              //     ? settingsPage(authBloc)
-              //     : userForm(authBloc)));
-              child: userForm(context))),
+              child: (isUserValid == true)
+                  ? userForm(context)
+                  : loginPage(context)))
     );
   }
 
   Widget userForm(BuildContext context) {
     return Form(
       key: _formKey,
-      autovalidateMode: AutovalidateMode.always,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       onChanged: () =>
           setState(() => _btnEnabled = _formKey.currentState!.validate()),
       child: SingleChildScrollView(
@@ -209,14 +227,37 @@ class RideState extends State<Ride> {
                   width: 300.0,
                   margin: const EdgeInsets.only(top: 25.0),
                   child: TextFormField(
-                    // controller: _emailController,
+                    controller: _dttmController,
                     cursorColor: Colors.blueAccent,
-                    keyboardType: TextInputType.emailAddress,
+                    // keyboardType: TextInputType.emailAddress,
+                    maxLength: 100,
+                    obscureText: false,
+                    onChanged: (value) => model.dttm = value,
+                    validator: (value) {
+                            return Validators().evalName(value!);
+                    },
+                    // onSaved: (value) => _email = value,
+                    decoration: InputDecoration(
+                      icon: const Icon(Icons.punch_clock),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16.0)),
+                      hintText: 'Pickup Datatime',
+                      labelText: 'Load Pick date time',
+                      // errorText: snapshot.error,
+                    ),
+                  )),
+              Container(
+                  width: 300.0,
+                  margin: const EdgeInsets.only(top: 25.0),
+                  child: TextFormField(
+                    controller: _fromController,
+                    cursorColor: Colors.blueAccent,
+                    // keyboardType: TextInputType.emailAddress,
                     maxLength: 50,
                     obscureText: false,
-                    // onChanged: (value) => model.email = value,
+                    onChanged: (value) => model.from = value,
                     validator: (value) {
-                            // return Validators().evalEmail(value!);
+                            return Validators().evalChar(value!);
                     },
                     // onSaved: (value) => _email = value,
                     decoration: InputDecoration(
@@ -232,14 +273,14 @@ class RideState extends State<Ride> {
                   width: 300.0,
                   margin: const EdgeInsets.only(top: 25.0),
                   child: TextFormField(
-                    // controller: _emailController,
+                    controller: _toController,
                     cursorColor: Colors.blueAccent,
-                    keyboardType: TextInputType.emailAddress,
+                    // keyboardType: TextInputType.emailAddress,
                     maxLength: 50,
                     obscureText: false,
-                    // onChanged: (value) => model.email = value,
+                    onChanged: (value) => model.to = value,
                     validator: (value) {
-                            // return Validators().evalEmail(value!);
+                            return Validators().evalChar(value!);
                     },
                     // onSaved: (value) => _email = value,
                     decoration: InputDecoration(
@@ -255,37 +296,14 @@ class RideState extends State<Ride> {
                   width: 300.0,
                   margin: const EdgeInsets.only(top: 25.0),
                   child: TextFormField(
-                    // controller: _emailController,
+                    controller: _loadTypeController,
                     cursorColor: Colors.blueAccent,
                     // keyboardType: TextInputType.emailAddress,
                     maxLength: 100,
                     obscureText: false,
-                    // onChanged: (value) => model.email = value,
+                    onChanged: (value) => model.loadType = value,
                     validator: (value) {
-                            // return Validators().evalEmail(value!);
-                    },
-                    // onSaved: (value) => _email = value,
-                    decoration: InputDecoration(
-                      icon: const Icon(Icons.message),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16.0)),
-                      hintText: 'type your message',
-                      labelText: 'Message',
-                      // errorText: snapshot.error,
-                    ),
-                  )),
-                  Container(
-                  width: 300.0,
-                  margin: const EdgeInsets.only(top: 25.0),
-                  child: TextFormField(
-                    // controller: _emailController,
-                    cursorColor: Colors.blueAccent,
-                    // keyboardType: TextInputType.emailAddress,
-                    maxLength: 100,
-                    obscureText: false,
-                    // onChanged: (value) => model.email = value,
-                    validator: (value) {
-                            // return Validators().evalEmail(value!);
+                            return Validators().evalChar(value!);
                     },
                     // onSaved: (value) => _email = value,
                     decoration: InputDecoration(
@@ -297,26 +315,26 @@ class RideState extends State<Ride> {
                       // errorText: snapshot.error,
                     ),
                   )),
-                  Container(
+              Container(
                   width: 300.0,
                   margin: const EdgeInsets.only(top: 25.0),
                   child: TextFormField(
-                    // controller: _emailController,
+                    controller: _messageController,
                     cursorColor: Colors.blueAccent,
                     // keyboardType: TextInputType.emailAddress,
                     maxLength: 100,
                     obscureText: false,
-                    // onChanged: (value) => model.email = value,
-                    validator: (value) {
-                            // return Validators().evalEmail(value!);
-                    },
+                    onChanged: (value) => model.message = value,
+                    // validator: (value) {
+                    //         // return Validators().evalEmail(value!);
+                    // },
                     // onSaved: (value) => _email = value,
                     decoration: InputDecoration(
-                      icon: const Icon(Icons.punch_clock),
+                      icon: const Icon(Icons.message),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16.0)),
-                      hintText: 'Pickup Datatime',
-                      labelText: 'Load Pick date time',
+                      hintText: 'type your message',
+                      labelText: 'Message',
                       // errorText: snapshot.error,
                     ),
                   )),
@@ -368,12 +386,12 @@ class RideState extends State<Ride> {
   Widget sendBtn(context) {
     return ElevatedButton(
       onPressed:
-          _btnEnabled == true ? () => fetchData(model.prompt) : null,
+          _btnEnabled == true ? () => setRide(model) : null,
       child: const Text('book')
     );
   }
 
-  Widget settingsPage(BuildContext context) {
+  Widget loginPage(BuildContext context) {
     return Center(
       child: Column(
         children: [
@@ -382,10 +400,10 @@ class RideState extends State<Ride> {
                 backgroundColor: Colors.grey,
                 child: Icon(Icons.warning, color: Colors.red,),
               ),
-              label: Text("please sign in after some time. Your free trial expired. \n\n Please upgrade to Pro to get unlimited access.", style: cWarnText)),
+              label: Text("please Login again, you are currently signed out.", style: cErrorText)),
           const SizedBox(width: 20, height: 50),
           ElevatedButton(
-            child: const Text('Home'),
+            child: const Text('Login'),
             // color: Colors.blue,
             onPressed: () { Navigator.pushNamed(
                     context,

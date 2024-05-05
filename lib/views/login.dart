@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+// import 'package:flutter/widgets.dart';
 import '../shared/constants.dart';
 import '../models/datamodel.dart';
 import '../models/validators.dart';
+import '../blocs/auth.bloc.dart';
 
 // ignore: must_be_immutable
 class LogIn extends StatefulWidget {
@@ -17,6 +19,7 @@ class LogIn extends StatefulWidget {
 
 class LogInState extends State<LogIn> {
 
+  bool isUserValid = false;
   bool spinnerVisible = false;
   bool messageVisible = false;
   bool _btnEnabled = false;
@@ -29,6 +32,10 @@ class LogInState extends State<LogIn> {
 
   @override
   void initState() {
+    loadAuthState();
+    model.password = "";
+    _passwordController.clear();
+    _btnEnabled = false;
     super.initState();
   }
 
@@ -37,6 +44,11 @@ class LogInState extends State<LogIn> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  void loadAuthState() async {
+    final userState = await authBloc.isSignedIn();
+    setState(() => isUserValid = userState);
   }
 
   toggleSpinner() {
@@ -53,89 +65,65 @@ class LogInState extends State<LogIn> {
     });
   }
 
-  // fetchData(AuthBloc authBloc, String loginType) async {
-  //   toggleSpinner();
-  //   var userAuth;
-  //   if (loginType == "Google") {
-  //     userAuth = await authBloc.signInWithGoogle();
-  //   } else {
-  //     userAuth = await authBloc.signInWithEmail(model);
-  //   }
-
-  //   if (userAuth == "") {
-  //     showMessage(true, "success", "Login Successful");
-  //   } else {
-  //     showMessage(
-  //         true,
-  //         "error",
-  //         (userAuth == 'user-not-found')
-  //             ? "No user found for that email."
-  //             : ((userAuth == 'wrong-password')
-  //                 ? "Wrong password provided for that user."
-  //                 : "An un-known error has occured."));
-  //   }
-  //   toggleSpinner();
-  // }
-  fetchData(String loginType) async {
+  void login(String loginType) async {
     toggleSpinner();
     // ignore: prefer_typing_uninitialized_variables
     var userAuth;
     if (loginType == "Google") {
-      // userAuth = await authBloc.signInWithGoogle();
+      userAuth = await authBloc.logInWithGoogle();
     } else {
-      // userAuth = await authBloc.signInWithEmail(model);
+      userAuth = await authBloc.logInWithEmail(model);
     }
-
-    if (userAuth == "") {
-      showMessage(true, "success", "Login Successful");
+  
+    if (userAuth.success) {
+      showMessage(true, "success", "Login successful. Please review your user settings.");
+      await Future.delayed(const Duration(seconds: 2));
+      navigateToUser();
     } else {
-      showMessage(
-          true,
-          "error",
-          (userAuth == 'user-not-found')
-              ? "No user found for that email."
-              : ((userAuth == 'wrong-password')
-                  ? "Wrong password provided for that user."
-                  : "An un-known error has occured."));
+      showMessage(true, "error", userAuth.error!.message);
     }
     toggleSpinner();
   }
 
-  // Future logout(AuthBloc authBloc) async {
-  //   setState(() {
-  //     model.password = "";
-  //     _passwordController.clear();
-  //     _btnEnabled = false;
-  //   });
-  //   toggleSpinner();
-  //   authBloc
-  //       .logout()
-  //       .then((res) =>
-  //           showMessage(true, "success", "Successfully logout from system."))
-  //       .catchError((error) => {showMessage(true, "error", error.toString())});
-  //   toggleSpinner();
-  // }
+  void navigateToUser() {
+    Navigator.pushReplacementNamed(context,'/');
+  }
+
+  void logout() async {
+    setState(() {
+      model.password = "";
+      _passwordController.clear();
+      _btnEnabled = false;
+    });
+    toggleSpinner();
+    var val = await authBloc.logout();
+    if (val == true) {
+      showMessage(true, "success", "Successfully signed out.");
+      setState(() => isUserValid = false);
+      navigateToUser();
+    } else {
+      showMessage(true, "error", val.error!.message);
+    }
+    toggleSpinner();
+  }
 
   @override
   Widget build(BuildContext context) {
-    // AuthBloc authBloc = AuthBloc();
     return Scaffold(
       // appBar: createAuthBar(context),
       appBar: createNavLogInBar(context, widget),
       body: Material(
           child: Container(
-              // margin: const EdgeInsets.all(20.0),
-              // child: authBloc.isSignedIn()
-              //     ? settingsPage(authBloc)
-              //     : userForm(authBloc)));
-              child: settingsPage(context))),
+              child: (isUserValid == true)
+                  ? settingsPage(context)
+                  : userForm(context)))
     );
   }
 
   Widget userForm(BuildContext context) {
     return Form(
       key: _formKey,
-      autovalidateMode: AutovalidateMode.always,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       onChanged: () =>
           setState(() => _btnEnabled = _formKey.currentState!.validate()),
       child: SingleChildScrollView(
@@ -209,17 +197,22 @@ class LogInState extends State<LogIn> {
               Container(
                 margin: const EdgeInsets.only(top: 15.0),
               ),
-              const Chip(
-                backgroundColor: Colors.red,
-                // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(15),
-                    bottomRight: Radius.circular(15),
-                    topLeft: Radius.circular(15),
-                    bottomLeft: Radius.circular(15),
-                    )),
-                label: Text("Sign In with Google")
+              GestureDetector(
+                onTap: () {
+                  login("Google");
+                },
+                child: const Chip(
+                  backgroundColor: Colors.red,
+                  // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(15),
+                      bottomRight: Radius.circular(15),
+                      topLeft: Radius.circular(15),
+                      bottomLeft: Radius.circular(15),
+                      )),
+                  label: Text("Sign In with Google")
+                ),
               ),
               // Chip(
               //     label: const Text("login with Google"),
@@ -256,7 +249,7 @@ class LogInState extends State<LogIn> {
   Widget signinSubmitBtn(context) {
     return ElevatedButton(
       onPressed:
-          _btnEnabled == true ? () => fetchData("email") : null,
+          _btnEnabled == true ? () => login("email") : null,
       child: const Text('Sign In')
     );
   }
@@ -310,11 +303,7 @@ class LogInState extends State<LogIn> {
             child: const Text('Logout'),
             // color: Colors.blue,
             onPressed: () {
-              // return logout(authBloc);
-              Navigator.pushReplacementNamed(
-                context,
-                '/',
-              );
+              logout();
             },
           ),
         ],

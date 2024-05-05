@@ -1,8 +1,10 @@
 // import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import '../shared/constants.dart';
 import '../models/datamodel.dart';
 import '../models/validators.dart';
+import '../blocs/auth.bloc.dart';
 
 // ignore: must_be_immutable
 class SignUp extends StatefulWidget {
@@ -16,18 +18,20 @@ class SignUp extends StatefulWidget {
 }
 
 class SignUpState extends State<SignUp> {
+  bool isUserValid = false;
   bool spinnerVisible = false;
   bool messageVisible = false;
   bool _btnEnabled = false;
   String messageTxt = "";
   String messageType = "";
   final _formKey = GlobalKey<FormState>();
-  var model = LoginDataModel(email: 'noreply@duck.com', password: 'na',);
+  LoginDataModel model = LoginDataModel(email: 'noreply@duck.com', password: 'na',);
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   @override
   void initState() {
+    loadAuthState();
     super.initState();
   }
 
@@ -42,6 +46,11 @@ class SignUpState extends State<SignUp> {
     setState(() => spinnerVisible = !spinnerVisible);
   }
 
+  void loadAuthState() async {
+    final userState = await authBloc.isSignedIn();
+    setState(() => isUserValid = userState);
+  }
+
   showMessage(bool msgVisible, msgType, message) {
     messageVisible = msgVisible;
     setState(() {
@@ -52,68 +61,28 @@ class SignUpState extends State<SignUp> {
     });
   }
 
-  // fetchData(AuthBloc authBloc, String loginType) async {
-  //   toggleSpinner();
-  //   var userAuth;
-  //   if (loginType == "Google") {
-  //     userAuth = await authBloc.signInWithGoogle();
-  //   } else {
-  //     userAuth = await authBloc.signInWithEmail(model);
-  //   }
-
-  //   if (userAuth == "") {
-  //     showMessage(true, "success", "Login Successful");
-  //   } else {
-  //     showMessage(
-  //         true,
-  //         "error",
-  //         (userAuth == 'user-not-found')
-  //             ? "No user found for that email."
-  //             : ((userAuth == 'wrong-password')
-  //                 ? "Wrong password provided for that user."
-  //                 : "An un-known error has occured."));
-  //   }
-  //   toggleSpinner();
-  // }
-  fetchData(String loginType) async {
+  void setData(String loginType) async {
     toggleSpinner();
     // ignore: prefer_typing_uninitialized_variables
     var userAuth;
     if (loginType == "Google") {
-      // userAuth = await authBloc.signInWithGoogle();
+      userAuth = await authBloc.signInWithGoogle();
     } else {
-      // userAuth = await authBloc.signInWithEmail(model);
+      userAuth = await authBloc.signUpWithEmail(model);
     }
-
-    if (userAuth == "") {
-      showMessage(true, "success", "Login Successful");
+    if (userAuth.success) {
+      showMessage(true, "success", "Account created, please update your user settings.");
+      await Future.delayed(const Duration(seconds: 2));
+      navigateToUser();
     } else {
-      showMessage(
-          true,
-          "error",
-          (userAuth == 'user-not-found')
-              ? "No user found for that email."
-              : ((userAuth == 'wrong-password')
-                  ? "Wrong password provided for that user."
-                  : "An un-known error has occured."));
+      showMessage(true, "error", userAuth.error!.message);
     }
     toggleSpinner();
   }
 
-  // Future logout(AuthBloc authBloc) async {
-  //   setState(() {
-  //     model.password = "";
-  //     _passwordController.clear();
-  //     _btnEnabled = false;
-  //   });
-  //   toggleSpinner();
-  //   authBloc
-  //       .logout()
-  //       .then((res) =>
-  //           showMessage(true, "success", "Successfully logout from system."))
-  //       .catchError((error) => {showMessage(true, "error", error.toString())});
-  //   toggleSpinner();
-  // }
+  void navigateToUser() {
+    Navigator.pushReplacementNamed(context,'/settings');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,17 +93,17 @@ class SignUpState extends State<SignUp> {
       body: Material(
           child: Container(
               margin: const EdgeInsets.all(20.0),
-              // child: authBloc.isSignedIn()
-              //     ? settingsPage(authBloc)
-              //     : userForm(authBloc)));
-              child: userForm(context))),
+              // ignore: unnecessary_null_comparison
+              child: (isUserValid == true)
+                  ? settingsPage(context)
+                  : userForm(context)))
     );
   }
   
   Widget userForm(BuildContext context) {
     return Form(
       key: _formKey,
-      autovalidateMode: AutovalidateMode.always,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       onChanged: () =>
           setState(() => _btnEnabled = _formKey.currentState!.validate()),
       child: SingleChildScrollView(
@@ -215,17 +184,22 @@ class SignUpState extends State<SignUp> {
               //       // onPressed: () => fetchData(authBloc, "Google"),
               //       onPressed: () => {},
               //     )),
-              const Chip(
-                backgroundColor: Colors.red,
-                // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.only(
-                    topRight: Radius.circular(15),
-                    bottomRight: Radius.circular(15),
-                    topLeft: Radius.circular(15),
-                    bottomLeft: Radius.circular(15),
-                    )),
-                label: Text("Sign In with Google")
+              GestureDetector(
+                child: const Chip(
+                  backgroundColor: Colors.red,
+                  // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      topRight: Radius.circular(15),
+                      bottomRight: Radius.circular(15),
+                      topLeft: Radius.circular(15),
+                      bottomLeft: Radius.circular(15),
+                      )),
+                  label: Text("Sign In with Google"),
+                ),
+                onTap: () {
+                  setData("Google");
+                },
               ),
               Container(
                 margin: const EdgeInsets.only(top: 15.0),
@@ -254,7 +228,7 @@ class SignUpState extends State<SignUp> {
   Widget signinSubmitBtn(context) {
     return ElevatedButton(
       onPressed:
-          _btnEnabled == true ? () => fetchData("email") : null,
+          _btnEnabled == true ? () => setData("email") : null,
       child: const Text('Sign Up')
     );
   }
@@ -276,18 +250,18 @@ class SignUpState extends State<SignUp> {
             onPressed: () {
               Navigator.pushReplacementNamed(
                 context,
-                '/dashboard',
+                '/',
               );
             },
           ),
-          const SizedBox(width: 20, height: 70),
-          ElevatedButton(
-            child: const Text('Logout'),
-            // color: Colors.blue,
-            onPressed: () {
-              // return logout(authBloc);
-            },
-          ),
+          // const SizedBox(width: 20, height: 70),
+          // ElevatedButton(
+          //   child: const Text('Logout'),
+          //   // color: Colors.blue,
+          //   onPressed: () {
+          //     // return logout(authBloc);
+          //   },
+          // ),
         ],
       ),
     );

@@ -101,8 +101,8 @@ class _AppState extends State<App> {
       debugShowCheckedModeBanner: false,
       title: cAppTitle,
       themeMode: themeMode,
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
+      theme: ThemeData.dark(),
+      darkTheme: ThemeData.light(),
       // theme: ThemeData(
       //   colorSchemeSeed: colorSelectionMethod == ColorSelectionMethod.colorSeed
       //       ? colorSelected.color

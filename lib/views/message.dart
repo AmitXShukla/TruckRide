@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../shared/constants.dart';
 import '../models/datamodel.dart';
 import '../models/validators.dart';
+import '../blocs/auth.bloc.dart';
 
 // ignore: must_be_immutable
 class Message extends StatefulWidget {
@@ -15,19 +16,31 @@ class Message extends StatefulWidget {
 }
 
 class MessageState extends State<Message> {
-  bool light = true;
+  bool isUserValid = true;
   bool spinnerVisible = false;
   bool messageVisible = false;
   bool _btnEnabled = false;
   String messageTxt = "";
   String messageType = "";
   final _formKey = GlobalKey<FormState>();
-  var model = PromptDataModel(prompt: 'none', res: 'na');
+  InboxModel model = InboxModel(dttm: '-', from: '-', to: '-', message: '-', 
+              readReceipt: false, fileURL: '-');
   final TextEditingController _txtController = TextEditingController();
 
   @override
   void initState() {
+    loadAuthState();
     super.initState();
+  }
+  
+  void loadAuthState() async {
+    final userState = await authBloc.isSignedIn();
+    setState(() => isUserValid = userState);
+    var username = await authBloc.getUser();
+    // storing user uid/objectId from users class, as a field into message record
+    model.dttm = DateTime.now().toString();
+    model.from = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
+    model.to = "ADMIN";
   }
 
   @override
@@ -37,10 +50,16 @@ class MessageState extends State<Message> {
   }
 
   toggleSpinner() {
+    // TODO : refactor code
+    //make this as a global reusable widget
+    // define this in constants.dart
     setState(() => spinnerVisible = !spinnerVisible);
   }
 
   showMessage(bool msgVisible, msgType, message) {
+    // TODO : refactor code
+    //make this as a global reusable widget
+    // define this in constants.dart
     messageVisible = msgVisible;
     setState(() {
       messageType = msgType == "error"
@@ -50,26 +69,15 @@ class MessageState extends State<Message> {
     });
   }
 
-    getData(filter, docId) {
-
-    // return qry.limit(10).snapshots();
-  }
-
-  fetchData(String prompt) async {
+  void setData(InboxModel model) async {
     toggleSpinner();
     // ignore: prefer_typing_uninitialized_variables
-    // var userAuth;
-    if (prompt != "") {
-      // userAuth = await authBloc.signInWithGoogle();
-      showMessage(
-          true,
-          "success",
-          prompt);
+    var userData;
+    userData = await authBloc.setMessage(model);
+    if (userData == true) {
+      showMessage(true, "success", "message sent to Admin.");
     } else {
-      showMessage(
-          true,
-          "error",
-          "no text found in Prompt.");
+      showMessage(true, "error", "something went wrong, please contact your Admin.");
     }
     toggleSpinner();
   }
@@ -82,17 +90,16 @@ class MessageState extends State<Message> {
       body: Material(
           child: Container(
               margin: const EdgeInsets.all(20.0),
-              // child: authBloc.isSignedIn()
-              //     ? settingsPage(authBloc)
-              //     : userForm(authBloc)));
-              child: userForm(context))),
+              child: (isUserValid == true)
+                  ? userForm(context)
+                  : loginPage(context)))
     );
   }
 
   Widget userForm(BuildContext context) {
     return Form(
       key: _formKey,
-      autovalidateMode: AutovalidateMode.always,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       onChanged: () =>
           setState(() => _btnEnabled = _formKey.currentState!.validate()),
       child: SingleChildScrollView(
@@ -122,93 +129,18 @@ class MessageState extends State<Message> {
                   width: 300.0,
                   margin: const EdgeInsets.only(top: 25.0),
                   child: TextFormField(
-                    // controller: _emailController,
+                    controller: _txtController,
                     cursorColor: Colors.blueAccent,
-                    keyboardType: TextInputType.emailAddress,
+                    keyboardType: TextInputType.text,
                     maxLength: 50,
                     obscureText: false,
-                    // onChanged: (value) => model.email = value,
+                    onChanged: (value) => model.message = value,
                     validator: (value) {
-                            return Validators().evalEmail(value!);
+                            return Validators().evalChar(value!);
                     },
                     // onSaved: (value) => _email = value,
                     decoration: InputDecoration(
                       icon: const Icon(Icons.person),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16.0)),
-                      hintText: 'Name',
-                      labelText: 'Name *',
-                      // errorText: snapshot.error,
-                    ),
-                  )),
-              Container(
-                margin: const EdgeInsets.only(top: 5.0),
-              ),
-              Container(
-                  width: 300.0,
-                  margin: const EdgeInsets.only(top: 25.0),
-                  child: TextFormField(
-                    // controller: _emailController,
-                    cursorColor: Colors.blueAccent,
-                    keyboardType: TextInputType.emailAddress,
-                    maxLength: 50,
-                    obscureText: false,
-                    // onChanged: (value) => model.email = value,
-                    validator: (value) {
-                            return Validators().evalEmail(value!);
-                    },
-                    // onSaved: (value) => _email = value,
-                    decoration: InputDecoration(
-                      icon: const Icon(Icons.email),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16.0)),
-                      hintText: 'emailID',
-                      labelText: 'EmailID *',
-                      // errorText: snapshot.error,
-                    ),
-                  )),
-              Container(
-                margin: const EdgeInsets.only(top: 5.0),
-              ),
-              Container(
-                  width: 300.0,
-                  margin: const EdgeInsets.only(top: 25.0),
-                  child: TextFormField(
-                    // controller: _emailController,
-                    cursorColor: Colors.blueAccent,
-                    keyboardType: TextInputType.emailAddress,
-                    maxLength: 50,
-                    obscureText: false,
-                    // onChanged: (value) => model.email = value,
-                    validator: (value) {
-                            return Validators().evalEmail(value!);
-                    },
-                    // onSaved: (value) => _email = value,
-                    decoration: InputDecoration(
-                      icon: const Icon(Icons.phone),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16.0)),
-                      hintText: 'Phone #',
-                      labelText: 'Phone *',
-                      // errorText: snapshot.error,
-                    ),
-                  )),
-                  Container(
-                  width: 300.0,
-                  margin: const EdgeInsets.only(top: 25.0),
-                  child: TextFormField(
-                    // controller: _emailController,
-                    cursorColor: Colors.blueAccent,
-                    // keyboardType: TextInputType.emailAddress,
-                    maxLength: 100,
-                    obscureText: false,
-                    // onChanged: (value) => model.email = value,
-                    validator: (value) {
-                            // return Validators().evalEmail(value!);
-                    },
-                    // onSaved: (value) => _email = value,
-                    decoration: InputDecoration(
-                      icon: const Icon(Icons.message),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16.0)),
                       hintText: 'Message',
@@ -219,31 +151,7 @@ class MessageState extends State<Message> {
               Container(
                 margin: const EdgeInsets.only(top: 5.0),
               ),
-              Container(
-                margin: const EdgeInsets.only(top: 5.0),
-              ),
               const Text("upload documents", style: cBodyText,),
-              // Container(
-              //     width: 300.0,
-              //     margin: const EdgeInsets.only(top: 25.0),
-              //     child: TextFormField(
-              //       controller: _passwordController,
-              //       cursorColor: Colors.blueAccent,
-              //       keyboardType: TextInputType.visiblePassword,
-              //       maxLength: 50,
-              //       obscureText: true,
-              //       onChanged: (value) => model.password = value,
-              //       validator: (value) {
-              //               return Validators().evalPassword(value!);
-              //       },
-              //       decoration: InputDecoration(
-              //         icon: const Icon(Icons.lock_outline),
-              //         border: OutlineInputBorder(
-              //             borderRadius: BorderRadius.circular(16.0)),
-              //         hintText: 'enter password',
-              //         labelText: 'Password *',
-              //       ),
-              //     )),
               CustomSpinner(toggleSpinner: spinnerVisible, key: null),
               CustomMessage(
                   toggleMessage: messageVisible,
@@ -264,12 +172,12 @@ class MessageState extends State<Message> {
   Widget sendBtn(context) {
     return ElevatedButton(
       onPressed:
-          _btnEnabled == true ? () => fetchData(model.prompt) : null,
+          _btnEnabled == true ? () => setData(model) : null,
       child: const Text('send message')
     );
   }
 
-  Widget settingsPage(BuildContext context) {
+  Widget loginPage(BuildContext context) {
     return Center(
       child: Column(
         children: [
@@ -278,10 +186,10 @@ class MessageState extends State<Message> {
                 backgroundColor: Colors.grey,
                 child: Icon(Icons.warning, color: Colors.red,),
               ),
-              label: Text("please sign in after some time. Your free trial expired. \n\n Please upgrade to Pro to get unlimited access.", style: cWarnText)),
+              label: Text("please Login again, you are currently signed out.", style: cErrorText)),
           const SizedBox(width: 20, height: 50),
           ElevatedButton(
-            child: const Text('Home'),
+            child: const Text('Login'),
             // color: Colors.blue,
             onPressed: () { Navigator.pushNamed(
                     context,

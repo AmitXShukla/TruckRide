@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../blocs/auth.bloc.dart';
 
 const double narrowScreenWidthThreshold = 450;
 
@@ -6,6 +7,7 @@ const double mediumWidthBreakpoint = 1000;
 const double largeWidthBreakpoint = 1500;
 
 const double transitionLength = 500;
+var mailCount = 0;
 bool isBright = true;
 
 const cAppTitle = "afro nala";
@@ -199,7 +201,9 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
       );
   }
 
-  PreferredSizeWidget createCustomerNavBar(BuildContext context, widget) {
+  PreferredSizeWidget createCustomerNavBar(BuildContext context, widget) { 
+    var data = authBloc.getData("Messages", "-");
+    data.then((value) => mailCount = value.length);
     return AppBar(
       leading: IconButton(
         // icon: const Icon(Icons.menu),
@@ -225,8 +229,8 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
           ),
           IconButton(
             // icon: const Icon(Icons.email, color: Colors.blueAccent,),
-            icon: const Badge(label: Text('4'), textColor: Colors.white, backgroundColor: Colors.red,
-            child: Icon(Icons.email, color: Colors.blueAccent)),
+            icon: Badge(label: Text(mailCount.toString()), textColor: Colors.white, backgroundColor: Colors.red,
+            child: const Icon(Icons.email, color: Colors.blueAccent)),
             tooltip: 'Inbox',
             onPressed: () {
               Navigator.pushReplacementNamed(

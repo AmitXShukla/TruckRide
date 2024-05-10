@@ -7,8 +7,7 @@ import '../blocs/auth.bloc.dart';
 // ignore: must_be_immutable
 class Settings extends StatefulWidget {
   static const routeName = '/settings';
-  Settings({super.key,
-  required this.handleBrightnessChange});
+  Settings({super.key, required this.handleBrightnessChange});
 
   Function(bool useLightMode) handleBrightnessChange;
   @override
@@ -20,7 +19,7 @@ class SettingsState extends State<Settings> {
   // bool light = true;
   // bool customer = true;
   // bool provider = false;
-  static List<String> list = <String>['Customer', 'Driver', 'Company'];
+  static List<String> list = <String>['Customer', 'Driver'];
   String dropdownValue = list.first;
   bool spinnerVisible = false;
   bool messageVisible = false;
@@ -28,8 +27,15 @@ class SettingsState extends State<Settings> {
   String messageTxt = "";
   String messageType = "";
   final _formKey = GlobalKey<FormState>();
-  var model = UserDataModel(objectId:'', uid:'', userName:'', userType: '', 
-                name: '', email: '', phone: '', address: '');
+  var model = UserDataModel(
+      objectId: '',
+      uid: '',
+      userName: '',
+      userType: '',
+      name: '',
+      email: '',
+      phone: '',
+      address: '');
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
@@ -37,8 +43,8 @@ class SettingsState extends State<Settings> {
 
   @override
   void initState() {
-    loadAuthState();
     super.initState();
+    loadAuthState();
   }
 
   @override
@@ -55,22 +61,26 @@ class SettingsState extends State<Settings> {
     setState(() => isUserValid = userState);
     var username = await authBloc.getUser();
     // storing user uid/objectId from users class, as a field into settings record
-    model.uid = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
-    model.userName = (username?.get("userName") ==  null) ? "-" : username?.get("userName");
+    model.uid =
+        (username?.get("objectId") == null) ? "-" : username?.get("objectId");
+    model.userName =
+        (username?.get("userName") == null) ? "-" : username?.get("userName");
     model.userType = dropdownValue;
 
     var res = await authBloc.getSettings(model);
     if (res.isNotEmpty) {
-      model.objectId = res[0].objectId.toString();
-      model.name = res[0]["name"];
-      _nameController.text = res[0]["name"];
-      model.email = res[0]["email"];
-      _emailController.text = res[0]["email"];
-      model.phone = res[0]["phone"];
-      _phoneController.text = res[0]["phone"];
-      model.address = res[0]["address"];
-      _addressController.text = res[0]["address"];
-      dropdownValue = res[0]["userType"];
+      setState(() {
+        model.objectId = res[0].objectId.toString();
+        model.name = res[0]["name"];
+        _nameController.text = res[0]["name"];
+        model.email = res[0]["email"];
+        _emailController.text = res[0]["email"];
+        model.phone = res[0]["phone"];
+        _phoneController.text = res[0]["phone"];
+        model.address = res[0]["address"];
+        _addressController.text = res[0]["address"];
+        dropdownValue = res[0]["userType"];
+      });
     } else {
       model.objectId = "-";
     }
@@ -94,9 +104,11 @@ class SettingsState extends State<Settings> {
     toggleSpinner();
     var val = await authBloc.resetPassword();
     if (val.success == true) {
-      showMessage(true, "success", "Reset password email is sent to your registered email.");
+      showMessage(true, "success",
+          "Reset password email is sent to your registered email.");
     } else {
-      showMessage(true, "error", "something went wrong, please contact your Admin.");
+      showMessage(
+          true, "error", "something went wrong, please contact your Admin.");
     }
     toggleSpinner();
   }
@@ -110,7 +122,30 @@ class SettingsState extends State<Settings> {
     if (userData == true) {
       showMessage(true, "success", "user settings updated.");
     } else {
-      showMessage(true, "error", "something went wrong, please contact your Admin.");
+      showMessage(
+          true, "error", "something went wrong, please contact your Admin.");
+    }
+    toggleSpinner();
+  }
+
+  void navigateToUser() {
+    Navigator.pushReplacementNamed(context, '/');
+  }
+
+  void logout() async {
+    // setState(() {
+    //   model.password = "";
+    //   _passwordController.clear();
+    //   _btnEnabled = false;
+    // });
+    toggleSpinner();
+    var val = await authBloc.logout();
+    if (val == true) {
+      showMessage(true, "success", "Successfully signed out.");
+      setState(() => isUserValid = false);
+      navigateToUser();
+    } else {
+      showMessage(true, "error", val.error!.message);
     }
     toggleSpinner();
   }
@@ -119,14 +154,13 @@ class SettingsState extends State<Settings> {
   Widget build(BuildContext context) {
     // AuthBloc authBloc = AuthBloc();
     return Scaffold(
-      appBar: createCustomerNavBar(context, widget),
-      body: Material(
-          child: Container(
-              margin: const EdgeInsets.all(20.0),
-              child: (isUserValid == true)
-                  ? userForm(context)
-                  : loginPage(context)))
-    );
+        appBar: createCustomerNavBar(context, widget),
+        body: Material(
+            child: Container(
+                margin: const EdgeInsets.all(20.0),
+                child: (isUserValid == true)
+                    ? userForm(context)
+                    : loginPage(context))));
   }
 
   Widget userForm(BuildContext context) {
@@ -140,26 +174,31 @@ class SettingsState extends State<Settings> {
           child: Column(
             children: <Widget>[
               // const Image(image: AssetImage('../assets/afronalalogo.png'), width: 200, height: 200,),
-              const Text("update settings", style: cBodyText,),
+              const Text(
+                "update settings",
+                style: cBodyText,
+              ),
               DropdownButton<String>(
                 value: dropdownValue,
                 icon: const Icon(Icons.arrow_downward),
                 elevation: 16,
                 // style: const TextStyle(color: Colors.deepPurple),
                 underline: Container(
-                height: 2,
-                color: Colors.deepPurpleAccent,),
+                  height: 2,
+                  color: Colors.deepPurpleAccent,
+                ),
                 onChanged: (String? value) {
-                // This is called when the user selects an item.
-                setState(() {
-                dropdownValue = value!;
-              });
-              },
-              items: list.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),);
-              }).toList(),
+                  // This is called when the user selects an item.
+                  setState(() {
+                    dropdownValue = value!;
+                  });
+                },
+                items: list.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
               ),
               // SizedBox(
               //   width: 300,
@@ -225,7 +264,7 @@ class SettingsState extends State<Settings> {
                     obscureText: false,
                     onChanged: (value) => model.name = value,
                     validator: (value) {
-                            return Validators().evalName(value!);
+                      return Validators().evalName(value!);
                     },
                     // onSaved: (value) => _email = value,
                     decoration: InputDecoration(
@@ -251,7 +290,7 @@ class SettingsState extends State<Settings> {
                     obscureText: false,
                     onChanged: (value) => model.email = value,
                     validator: (value) {
-                            return Validators().evalEmail(value!);
+                      return Validators().evalEmail(value!);
                     },
                     // onSaved: (value) => _email = value,
                     decoration: InputDecoration(
@@ -277,7 +316,7 @@ class SettingsState extends State<Settings> {
                     obscureText: false,
                     onChanged: (value) => model.phone = value,
                     validator: (value) {
-                            return Validators().evalPhone(value!);
+                      return Validators().evalPhone(value!);
                     },
                     // onSaved: (value) => _email = value,
                     decoration: InputDecoration(
@@ -303,7 +342,7 @@ class SettingsState extends State<Settings> {
                     obscureText: false,
                     onChanged: (value) => model.address = value,
                     validator: (value) {
-                            return Validators().evalChar(value!);
+                      return Validators().evalChar(value!);
                     },
                     // onSaved: (value) => _email = value,
                     decoration: InputDecoration(
@@ -318,16 +357,24 @@ class SettingsState extends State<Settings> {
               Container(
                 margin: const EdgeInsets.only(top: 5.0),
               ),
-              const Text("upload profile photo", style: cBodyText,),
+              const Text(
+                "upload profile photo",
+                style: cBodyText,
+              ),
               Container(
                 margin: const EdgeInsets.only(top: 5.0),
               ),
-              const Text("upload documents", style: cBodyText,),
+              const Text(
+                "upload documents",
+                style: cBodyText,
+              ),
               CustomSpinner(toggleSpinner: spinnerVisible, key: null),
               CustomMessage(
-                  toggleMessage: messageVisible,
-                  toggleMessageType: messageType,
-                  toggleMessageTxt: messageTxt, key: null,),
+                toggleMessage: messageVisible,
+                toggleMessageType: messageType,
+                toggleMessageTxt: messageTxt,
+                key: null,
+              ),
               Container(
                 margin: const EdgeInsets.only(top: 15.0),
               ),
@@ -337,11 +384,22 @@ class SettingsState extends State<Settings> {
                 margin: const EdgeInsets.only(top: 15.0),
               ),
               ElevatedButton(
-                  child: const Text('reset password'),
-                  // color: Colors.blue,
-                  onPressed: () {
-                    showAlertDialog(context);
-                },),
+                child: const Text('reset password'),
+                // color: Colors.blue,
+                onPressed: () {
+                  showAlertDialog(context);
+                },
+              ),
+              Container(
+                margin: const EdgeInsets.only(top: 15.0),
+              ),
+              ElevatedButton(
+                child: const Text('Log out'),
+                // color: Colors.blue,
+                onPressed: () {
+                  logout();
+                },
+              ),
             ],
           ),
         ),
@@ -351,10 +409,8 @@ class SettingsState extends State<Settings> {
 
   Widget sendBtn(context) {
     return ElevatedButton(
-      onPressed:
-          _btnEnabled == true ? () => setData() : null,
-      child: const Text('save')
-    );
+        onPressed: _btnEnabled == true ? () => setData() : null,
+        child: const Text('save'));
   }
 
   Widget loginPage(BuildContext context) {
@@ -364,17 +420,23 @@ class SettingsState extends State<Settings> {
           const Chip(
               avatar: CircleAvatar(
                 backgroundColor: Colors.grey,
-                child: Icon(Icons.warning, color: Colors.red,),
+                child: Icon(
+                  Icons.warning,
+                  color: Colors.red,
+                ),
               ),
-              label: Text("please Login again, you are currently signed out.", style: cErrorText)),
+              label: Text("please Login again, you are currently signed out.",
+                  style: cErrorText)),
           const SizedBox(width: 20, height: 50),
           ElevatedButton(
             child: const Text('Login'),
             // color: Colors.blue,
-            onPressed: () { Navigator.pushNamed(
-                    context,
-                    '/',
-                  );},
+            onPressed: () {
+              Navigator.pushNamed(
+                context,
+                '/',
+              );
+            },
           ),
         ],
       ),
@@ -385,33 +447,33 @@ class SettingsState extends State<Settings> {
     // set up the buttons
     Widget cancelButton = TextButton(
       child: const Text("Cancel"),
-      onPressed:  () {
+      onPressed: () {
         Navigator.pop(context);
       },
     );
     Widget continueButton = TextButton(
       child: const Text("Continue"),
-      onPressed:  () {
+      onPressed: () {
         resetPassword();
         Navigator.pop(context);
       },
     );
-  // set up the AlertDialog
-  AlertDialog alert = AlertDialog(
-    title: const Text("Please confirm"),
-    content: const Text("Would you like to continue with Reset Password ?"),
-    actions: [
-      cancelButton,
-      continueButton,
-    ],
-  );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: const Text("Please confirm"),
+      content: const Text("Would you like to continue with Reset Password ?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
 
-  // show the dialog
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
-}
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 }

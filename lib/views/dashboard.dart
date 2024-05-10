@@ -21,7 +21,7 @@ class DashboardState extends State<Dashboard> {
   String messageTxt = "";
   String messageType = "";
   final _formKey = GlobalKey<FormState>();
-  var model = PromptDataModel(prompt: 'none', res: 'na');
+  // var model = PromptDataModel(prompt: 'none', res: 'na');
   final TextEditingController _txtController = TextEditingController();
 
   @override
@@ -104,7 +104,7 @@ class DashboardState extends State<Dashboard> {
                   keyboardType: TextInputType.emailAddress,
                   maxLength: 50,
                   obscureText: false,
-                  onChanged: (value) => model.prompt = value,
+                  // onChanged: (value) => model.prompt = value,
                   validator: (value) {
                           return Validators().evalChar(value!);
                   },
@@ -143,7 +143,8 @@ class DashboardState extends State<Dashboard> {
   Widget sendBtn(context) {
     return ElevatedButton(
       onPressed:
-          _btnEnabled == true ? () => fetchData(model.prompt) : null,
+          // _btnEnabled == true ? () => fetchData(model.prompt) : null,
+          _btnEnabled == true ? () => null : null,
       child: const Text('send')
     );
   }

@@ -25,9 +25,11 @@ class RideState extends State<Ride> {
   final _formKey = GlobalKey<FormState>();
   RideModel model = RideModel(
               objectId: '-',
-              requestor: '-',
+              uid: '-',
               dttm: '-', from: '-', to: '-', message: '-', 
-              loadType: '-', status: '-', fileURL: '-');
+              loadType: '-', status: 'new', fileURL: '-');
+  InboxModel msgModel = InboxModel(dttm: '-', uid: '-', to: '-', message: '-', 
+              readReceipt: false, fileURL: '-');
   final TextEditingController _dttmController = TextEditingController();
   final TextEditingController _fromController = TextEditingController();
   final TextEditingController _toController = TextEditingController();
@@ -46,7 +48,8 @@ class RideState extends State<Ride> {
     var username = await authBloc.getUser();
     // storing user uid/objectId from users class, as a field into message record
     model.dttm = DateTime.now().toString();
-    model.requestor = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
+    model.uid = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
+    model.status = "new";
   }
 
   @override
@@ -85,11 +88,24 @@ class RideState extends State<Ride> {
     var userData;
     userData = await authBloc.setRide("Rides", model);
     if (userData == true) {
+      sendMessage("Your ride is booked, please wait for Drivers to accept your ride");
       showMessage(true, "success", "Ride is booked, please keep checking your Inbox for further notifications.");
     } else {
       showMessage(true, "error", "something went wrong, please contact your Admin.");
     }
     toggleSpinner();
+  }
+
+  void sendMessage(String msg) async {
+    var username = await authBloc.getUser();
+    // storing user uid/objectId from users class, as a field into message record
+    msgModel.dttm = DateTime.now().toString();
+    msgModel.uid = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
+    msgModel.to = "-";
+    msgModel.message = msg;
+
+    // ignore: prefer_typing_uninitialized_variables
+    await authBloc.setMessage(msgModel);
   }
 
   @override
@@ -145,107 +161,30 @@ class RideState extends State<Ride> {
                   ],
                 ),
               ),
-              // Container(
-              //     width: 300.0,
-              //     margin: const EdgeInsets.only(top: 25.0),
-              //     child: TextFormField(
-              //       // controller: _emailController,
-              //       cursorColor: Colors.blueAccent,
-              //       keyboardType: TextInputType.emailAddress,
-              //       maxLength: 50,
-              //       obscureText: false,
-              //       // onChanged: (value) => model.email = value,
-              //       validator: (value) {
-              //               return Validators().evalEmail(value!);
-              //       },
-              //       // onSaved: (value) => _email = value,
-              //       decoration: InputDecoration(
-              //         icon: const Icon(Icons.person),
-              //         border: OutlineInputBorder(
-              //             borderRadius: BorderRadius.circular(16.0)),
-              //         hintText: 'Name',
-              //         labelText: 'Name *',
-              //         // errorText: snapshot.error,
-              //       ),
-              //     )),
-              // Container(
-              //   margin: const EdgeInsets.only(top: 5.0),
-              // ),
-              // Container(
-              //     width: 300.0,
-              //     margin: const EdgeInsets.only(top: 25.0),
-              //     child: TextFormField(
-              //       // controller: _emailController,
-              //       cursorColor: Colors.blueAccent,
-              //       keyboardType: TextInputType.emailAddress,
-              //       maxLength: 50,
-              //       obscureText: false,
-              //       // onChanged: (value) => model.email = value,
-              //       validator: (value) {
-              //               return Validators().evalEmail(value!);
-              //       },
-              //       // onSaved: (value) => _email = value,
-              //       decoration: InputDecoration(
-              //         icon: const Icon(Icons.email),
-              //         border: OutlineInputBorder(
-              //             borderRadius: BorderRadius.circular(16.0)),
-              //         hintText: 'emailID',
-              //         labelText: 'EmailID *',
-              //         // errorText: snapshot.error,
-              //       ),
-              //     )),
-              // Container(
-              //   margin: const EdgeInsets.only(top: 5.0),
-              // ),
-              // Container(
-              //     width: 300.0,
-              //     margin: const EdgeInsets.only(top: 25.0),
-              //     child: TextFormField(
-              //       // controller: _emailController,
-              //       cursorColor: Colors.blueAccent,
-              //       keyboardType: TextInputType.emailAddress,
-              //       maxLength: 50,
-              //       obscureText: false,
-              //       // onChanged: (value) => model.email = value,
-              //       validator: (value) {
-              //               return Validators().evalEmail(value!);
-              //       },
-              //       // onSaved: (value) => _email = value,
-              //       decoration: InputDecoration(
-              //         icon: const Icon(Icons.phone),
-              //         border: OutlineInputBorder(
-              //             borderRadius: BorderRadius.circular(16.0)),
-              //         hintText: 'Phone #',
-              //         labelText: 'Phone *',
-              //         // errorText: snapshot.error,
-              //       ),
-              //     )),
-              //     Container(
-              //   margin: const EdgeInsets.only(top: 5.0),
-              // ),
               Container(
                   width: 300.0,
                   margin: const EdgeInsets.only(top: 25.0),
                   child: TextFormField(
                     controller: _dttmController,
                     cursorColor: Colors.blueAccent,
-                    // keyboardType: TextInputType.emailAddress,
+                    keyboardType: TextInputType.datetime,
                     maxLength: 100,
                     obscureText: false,
                     onChanged: (value) => model.dttm = value,
                     validator: (value) {
-                            return Validators().evalName(value!);
+                            return Validators().evalDate(value!);
                     },
                     // onSaved: (value) => _email = value,
                     decoration: InputDecoration(
                       icon: const Icon(Icons.punch_clock),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16.0)),
-                      hintText: 'Pickup Datatime',
+                      hintText: 'mm/dd/yy',
                       labelText: 'Load Pick date time',
                       // errorText: snapshot.error,
                     ),
-                  )),
+                  )
+                  ),
               Container(
                   width: 300.0,
                   margin: const EdgeInsets.only(top: 25.0),
@@ -299,7 +238,7 @@ class RideState extends State<Ride> {
                     controller: _loadTypeController,
                     cursorColor: Colors.blueAccent,
                     // keyboardType: TextInputType.emailAddress,
-                    maxLength: 100,
+                    maxLength: 30,
                     obscureText: false,
                     onChanged: (value) => model.loadType = value,
                     validator: (value) {
@@ -345,27 +284,6 @@ class RideState extends State<Ride> {
                 margin: const EdgeInsets.only(top: 5.0),
               ),
               const Text("upload documents", style: cBodyText,),
-              // Container(
-              //     width: 300.0,
-              //     margin: const EdgeInsets.only(top: 25.0),
-              //     child: TextFormField(
-              //       controller: _passwordController,
-              //       cursorColor: Colors.blueAccent,
-              //       keyboardType: TextInputType.visiblePassword,
-              //       maxLength: 50,
-              //       obscureText: true,
-              //       onChanged: (value) => model.password = value,
-              //       validator: (value) {
-              //               return Validators().evalPassword(value!);
-              //       },
-              //       decoration: InputDecoration(
-              //         icon: const Icon(Icons.lock_outline),
-              //         border: OutlineInputBorder(
-              //             borderRadius: BorderRadius.circular(16.0)),
-              //         hintText: 'enter password',
-              //         labelText: 'Password *',
-              //       ),
-              //     )),
               CustomSpinner(toggleSpinner: spinnerVisible, key: null),
               CustomMessage(
                   toggleMessage: messageVisible,

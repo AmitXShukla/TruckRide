@@ -17,6 +17,8 @@ import '../views/settings.dart';
 import '../views/rides.dart';
 import '../views/message.dart';
 import '../views/ride.dart';
+import '../views/bids.dart';
+import '../views/bid.dart';
 
 void main() async {
   // var analyzer = WebStartupAnalyzer(additionalFrameCount: 10);
@@ -143,6 +145,8 @@ class _AppState extends State<App> {
         Rides.routeName: (context) => Rides(handleBrightnessChange: handleBrightnessChange),
         Message.routeName: (context) => Message(handleBrightnessChange: handleBrightnessChange),
         Ride.routeName: (context) => Ride(handleBrightnessChange: handleBrightnessChange),
+        Bids.routeName: (context) => Bids(handleBrightnessChange: handleBrightnessChange),
+        Bid.routeName: (context) => Bid(handleBrightnessChange: handleBrightnessChange),
       },
     );
   }

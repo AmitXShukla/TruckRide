@@ -1,5 +1,5 @@
 # TruckRide
-FlutterFirebase Truck Ride Management app
+Flutter Truck Ride Management app
 
 ## Truck Load Ride App
 

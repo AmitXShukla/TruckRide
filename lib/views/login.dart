@@ -8,8 +8,7 @@ import '../blocs/auth.bloc.dart';
 // ignore: must_be_immutable
 class LogIn extends StatefulWidget {
   static const routeName = '/login';
-  LogIn({super.key,
-  required this.handleBrightnessChange});
+  LogIn({super.key, required this.handleBrightnessChange});
 
   Function(bool useLightMode) handleBrightnessChange;
 
@@ -18,7 +17,7 @@ class LogIn extends StatefulWidget {
 }
 
 class LogInState extends State<LogIn> {
-
+  var userType = "Customer";
   bool isUserValid = false;
   bool spinnerVisible = false;
   bool messageVisible = false;
@@ -26,7 +25,10 @@ class LogInState extends State<LogIn> {
   String messageTxt = "";
   String messageType = "";
   final _formKey = GlobalKey<FormState>();
-  var model = LoginDataModel(email: 'noreply@duck.com', password: 'na',);
+  var model = LoginDataModel(
+    email: '-',
+    password: 'na',
+  );
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -49,6 +51,12 @@ class LogInState extends State<LogIn> {
   void loadAuthState() async {
     final userState = await authBloc.isSignedIn();
     setState(() => isUserValid = userState);
+    if (isUserValid) {
+      var username = await authBloc.getUserType();
+      if (username.isNotEmpty) {
+        setState(() => userType = username[0]["userType"]);
+      }
+    }
   }
 
   toggleSpinner() {
@@ -74,9 +82,10 @@ class LogInState extends State<LogIn> {
     } else {
       userAuth = await authBloc.logInWithEmail(model);
     }
-  
+
     if (userAuth.success) {
-      showMessage(true, "success", "Login successful. Please review your user settings.");
+      showMessage(true, "success",
+          "Login successful. Please review your user settings.");
       await Future.delayed(const Duration(seconds: 2));
       navigateToUser();
     } else {
@@ -86,7 +95,7 @@ class LogInState extends State<LogIn> {
   }
 
   void navigateToUser() {
-    Navigator.pushReplacementNamed(context,'/');
+    Navigator.pushReplacementNamed(context, '/');
   }
 
   void logout() async {
@@ -107,17 +116,29 @@ class LogInState extends State<LogIn> {
     toggleSpinner();
   }
 
+  forgotPassword() async {
+    toggleSpinner();
+    var val = await authBloc.forgotPassword(model.email);
+    if (val.success == true) {
+      showMessage(true, "success",
+          "Reset password email is sent to your registered email.");
+    } else {
+      showMessage(
+          true, "error", "something went wrong, please contact your Admin.");
+    }
+    toggleSpinner();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: createAuthBar(context),
-      appBar: createNavLogInBar(context, widget),
-      body: Material(
-          child: Container(
-              child: (isUserValid == true)
-                  ? settingsPage(context)
-                  : userForm(context)))
-    );
+        // appBar: createAuthBar(context),
+        appBar: createNavLogInBar(context, widget),
+        body: Material(
+            child: Container(
+                child: (isUserValid == true)
+                    ? settingsPage(context)
+                    : userForm(context))));
   }
 
   Widget userForm(BuildContext context) {
@@ -130,7 +151,11 @@ class LogInState extends State<LogIn> {
         child: Center(
           child: Column(
             children: <Widget>[
-              const Image(image: AssetImage('../assets/afronalalogo.png'), width: 200, height: 200,),
+              const Image(
+                image: AssetImage('../assets/afronalalogo.png'),
+                width: 200,
+                height: 200,
+              ),
               SizedBox(
                   width: 300.0,
                   // margin: const EdgeInsets.only(top: 25.0),
@@ -142,7 +167,7 @@ class LogInState extends State<LogIn> {
                     obscureText: false,
                     onChanged: (value) => model.email = value,
                     validator: (value) {
-                            return Validators().evalEmail(value!);
+                      return Validators().evalEmail(value!);
                     },
                     // onSaved: (value) => _email = value,
                     decoration: InputDecoration(
@@ -168,7 +193,7 @@ class LogInState extends State<LogIn> {
                     obscureText: true,
                     onChanged: (value) => model.password = value,
                     validator: (value) {
-                            return Validators().evalPassword(value!);
+                      return Validators().evalPassword(value!);
                     },
                     decoration: InputDecoration(
                       icon: const Icon(Icons.lock_outline),
@@ -186,9 +211,11 @@ class LogInState extends State<LogIn> {
               ),
               CustomSpinner(toggleSpinner: spinnerVisible, key: null),
               CustomMessage(
-                  toggleMessage: messageVisible,
-                  toggleMessageType: messageType,
-                  toggleMessageTxt: messageTxt, key: null,),
+                toggleMessage: messageVisible,
+                toggleMessageType: messageType,
+                toggleMessageTxt: messageTxt,
+                key: null,
+              ),
               Container(
                 margin: const EdgeInsets.only(top: 15.0),
               ),
@@ -202,26 +229,17 @@ class LogInState extends State<LogIn> {
                   login("Google");
                 },
                 child: const Chip(
-                  backgroundColor: Colors.red,
-                  // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
+                    backgroundColor: Colors.red,
+                    // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(
                       topRight: Radius.circular(15),
                       bottomRight: Radius.circular(15),
                       topLeft: Radius.circular(15),
                       bottomLeft: Radius.circular(15),
-                      )),
-                  label: Text("Sign In with Google")
-                ),
+                    )),
+                    label: Text("Sign In with Google")),
               ),
-              // Chip(
-              //     label: const Text("login with Google"),
-              //     backgroundColor: Colors.red,
-              //     avatar: ElevatedButton(
-              //       child: const Text(''),
-              //       // onPressed: () => fetchData(authBloc, "Google"),
-              //       onPressed: () => {},
-              //     )),
               Container(
                 margin: const EdgeInsets.only(top: 15.0),
               ),
@@ -238,7 +256,16 @@ class LogInState extends State<LogIn> {
                       child: Text("+"),
                     ),
                     label: Text("create new Account")),
-              )
+              ),
+              Container(
+                margin: const EdgeInsets.only(top: 15.0),
+              ),
+              TextButton(
+                  onPressed: () {
+                    // forgotPassword();
+                    showAlertDialog(context);
+                  },
+                  child: const Text("forgot password"))
             ],
           ),
         ),
@@ -248,55 +275,44 @@ class LogInState extends State<LogIn> {
 
   Widget signinSubmitBtn(context) {
     return ElevatedButton(
-      onPressed:
-          _btnEnabled == true ? () => login("email") : null,
-      child: const Text('Sign In')
-    );
+        onPressed: _btnEnabled == true ? () => login("email") : null,
+        child: const Text('Sign In'));
   }
 
   Widget settingsPage(context) {
     return Center(
       child: Column(
         children: [
-          // const Chip(
-          //     avatar: CircleAvatar(
-          //       backgroundColor: Colors.grey,
-          //       child: Icon(Icons.home, color: Colors.blue,),
-          //     ),
-          //     label: Text("welcome to Manualify!.", style: cNavText)),
-          const Text('Welcome Amit !'),
           const SizedBox(width: 20, height: 50),
-          ElevatedButton(
-            child: const Text('click here to go to dashboard.'),
-            // color: Colors.blue,
-            onPressed: () {
-              Navigator.pushReplacementNamed(
-                context,
-                '/settings',
-              );
-            },
-          ),
-          const SizedBox(width: 20, height: 50),
-          ElevatedButton(
-            child: const Text('click here to go to Providers dashboard.'),
-            // color: Colors.blue,
-            onPressed: () {
-              Navigator.pushReplacementNamed(
-                context,
-                '/settings',
-              );
-            },
-          ),
-          const SizedBox(width: 20, height: 50),
-          ElevatedButton(
-            child: const Text('click here to go to Admin Portal.'),
-            // color: Colors.blue,
-            onPressed: () {
-              Navigator.pushReplacementNamed(
-                context,
-                '/settings',
-              );
-            },
+          (userType == "Customer")
+              ? IconButton(
+                  icon: const Icon(Icons.fire_truck_rounded),
+                  iconSize: 44,
+                  color: Colors.brown,
+                  tooltip: 'Book a Ride',
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/rides',
+                    );
+                  },
+                )
+              : IconButton(
+                  icon: const Icon(Icons.trolley),
+                  iconSize: 44,
+                  color: Colors.green,
+                  tooltip: 'Offer a Ride',
+                  onPressed: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/bids',
+                    );
+                  },
+                ),
+          const SizedBox(width: 20, height: 5),
+          const Text(
+            "ride with us",
+            style: cBodyText,
           ),
           const SizedBox(width: 20, height: 70),
           ElevatedButton(
@@ -308,6 +324,53 @@ class LogInState extends State<LogIn> {
           ),
         ],
       ),
+    );
+  }
+
+  showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget cancelButton = TextButton(
+      child: const Text("Cancel"),
+      onPressed: () {
+        Navigator.pop(context);
+      },
+    );
+    Widget continueButton = TextButton(
+      child: const Text("Continue"),
+      onPressed: () {
+        forgotPassword();
+        Navigator.pop(context);
+      },
+    );
+
+    AlertDialog alert;
+    if (model.email.toString() == "-") {
+      // set up the AlertDialog
+      alert = AlertDialog(
+        title: const Text("Please confirm"),
+        content: const Text("please enter your email and try again."),
+        actions: [
+          cancelButton,
+        ],
+      );
+    } else {
+      // set up the AlertDialog
+      alert = AlertDialog(
+        title: const Text("Please confirm"),
+        content: const Text("Would you like to continue with Reset Password ?"),
+        actions: [
+          cancelButton,
+          continueButton,
+        ],
+      );
+    }
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
     );
   }
 }

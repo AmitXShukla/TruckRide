@@ -23,7 +23,7 @@ class MessageState extends State<Message> {
   String messageTxt = "";
   String messageType = "";
   final _formKey = GlobalKey<FormState>();
-  InboxModel model = InboxModel(dttm: '-', from: '-', to: '-', message: '-', 
+  InboxModel model = InboxModel(dttm: '-', uid: '-', to: '-', message: '-', 
               readReceipt: false, fileURL: '-');
   final TextEditingController _txtController = TextEditingController();
 
@@ -39,7 +39,7 @@ class MessageState extends State<Message> {
     var username = await authBloc.getUser();
     // storing user uid/objectId from users class, as a field into message record
     model.dttm = DateTime.now().toString();
-    model.from = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
+    model.uid = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
     model.to = "ADMIN";
   }
 

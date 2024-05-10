@@ -25,6 +25,13 @@ class SignUpState extends State<SignUp> {
   String messageTxt = "";
   String messageType = "";
   final _formKey = GlobalKey<FormState>();
+  InboxModel msgModel = InboxModel(
+      dttm: '-',
+      uid: '-',
+      to: '-',
+      message: '-',
+      readReceipt: false,
+      fileURL: '-');
   LoginDataModel model = LoginDataModel(email: 'noreply@duck.com', password: 'na',);
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -71,9 +78,10 @@ class SignUpState extends State<SignUp> {
       userAuth = await authBloc.signUpWithEmail(model);
     }
     if (userAuth.success) {
-      showMessage(true, "success", "Account created, please update your user settings.");
+      sendMessage("Congratulations, your account is created, please update your settings.");
+      showMessage(true, "success", "Account created, an email is sent to your email ID, please Reset your password using that link and login back.");
       await Future.delayed(const Duration(seconds: 2));
-      navigateToUser();
+      // navigateToUser();
     } else {
       showMessage(true, "error", userAuth.error!.message);
     }
@@ -82,6 +90,19 @@ class SignUpState extends State<SignUp> {
 
   void navigateToUser() {
     Navigator.pushReplacementNamed(context,'/settings');
+  }
+
+  void sendMessage(String msg) async {
+    var username = await authBloc.getUser();
+    // storing user uid/objectId from users class, as a field into message record
+    msgModel.dttm = DateTime.now().toString();
+    msgModel.uid =
+        (username?.get("objectId") == null) ? "-" : username?.get("objectId");
+    msgModel.to = "-";
+    msgModel.message = msg;
+
+    // ignore: prefer_typing_uninitialized_variables
+    await authBloc.setMessage(msgModel);
   }
 
   @override

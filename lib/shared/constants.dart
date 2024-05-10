@@ -8,6 +8,7 @@ const double largeWidthBreakpoint = 1500;
 
 const double transitionLength = 500;
 var mailCount = 0;
+var userType = "Customer";
 bool isBright = true;
 
 const cAppTitle = "afro nala";
@@ -202,8 +203,10 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
   }
 
   PreferredSizeWidget createCustomerNavBar(BuildContext context, widget) { 
-    var data = authBloc.getData("Messages", "-");
+    var data = authBloc.getMessages("Messages", "-");
     data.then((value) => mailCount = value.length);
+    var username = authBloc.getUserType();
+    username.then((value) => userType = (value.isEmpty) ? "Customer" : value[0]["userType"]);
     return AppBar(
       leading: IconButton(
         // icon: const Icon(Icons.menu),
@@ -211,19 +214,31 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
         // onPressed: () { Scaffold.of(context).openDrawer(); },
         onPressed: () { Navigator.pushNamed(
                   context,
-                  '/',
+                  '/settings',
                 );},
         tooltip: "home",
       ),
       title: const Text(cAppTitle, style: cBodyText,),
       actions: <Widget>[
-          IconButton(
+        (userType == "Customer") ? 
+        IconButton(
             icon: const Icon(Icons.fire_truck_sharp, color: Colors.brown,),
             tooltip: 'Rides',
             onPressed: () {
               Navigator.pushReplacementNamed(
                 context,
                 '/rides',
+              );
+            },
+          )
+          :
+          IconButton(
+            icon: const Icon(Icons.trolley, color: Colors.green,),
+            tooltip: 'Bids',
+            onPressed: () {
+              Navigator.pushReplacementNamed(
+                context,
+                '/bids',
               );
             },
           ),

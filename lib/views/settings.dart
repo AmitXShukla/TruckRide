@@ -57,6 +57,7 @@ class SettingsState extends State<Settings> {
   }
 
   void loadAuthState() async {
+    toggleSpinner();
     final userState = await authBloc.isSignedIn();
     setState(() => isUserValid = userState);
     var username = await authBloc.getUser();
@@ -67,23 +68,43 @@ class SettingsState extends State<Settings> {
         (username?.get("userName") == null) ? "-" : username?.get("userName");
     model.userType = dropdownValue;
 
-    var res = await authBloc.getSettings(model);
-    if (res.isNotEmpty) {
-      setState(() {
-        model.objectId = res[0].objectId.toString();
-        model.name = res[0]["name"];
-        _nameController.text = res[0]["name"];
-        model.email = res[0]["email"];
-        _emailController.text = res[0]["email"];
-        model.phone = res[0]["phone"];
-        _phoneController.text = res[0]["phone"];
-        model.address = res[0]["address"];
-        _addressController.text = res[0]["address"];
-        dropdownValue = res[0]["userType"];
-      });
-    } else {
-      model.objectId = "-";
-    }
+    // var res = await authBloc.getSettings(model);
+    // if (res.isNotEmpty) {
+    //   setState(() {
+    //     model.objectId = res[0].objectId.toString();
+    //     model.name = res[0]["name"];
+    //     _nameController.text = res[0]["name"];
+    //     model.email = res[0]["email"];
+    //     _emailController.text = res[0]["email"];
+    //     model.phone = res[0]["phone"];
+    //     _phoneController.text = res[0]["phone"];
+    //     model.address = res[0]["address"];
+    //     _addressController.text = res[0]["address"];
+    //     dropdownValue = res[0]["userType"];
+    //   });
+    // } else {
+    //   model.objectId = "-";
+    // }
+    await authBloc.getSettings(model).then((res) => {
+          if (res.isNotEmpty)
+            {
+              setState(() {
+                model.objectId = res[0].objectId.toString();
+                model.name = res[0]["name"];
+                _nameController.text = res[0]["name"];
+                model.email = res[0]["email"];
+                _emailController.text = res[0]["email"];
+                model.phone = res[0]["phone"];
+                _phoneController.text = res[0]["phone"];
+                model.address = res[0]["address"];
+                _addressController.text = res[0]["address"];
+                dropdownValue = res[0]["userType"];
+              })
+            }
+          else
+            {model.objectId = "-"}
+        });
+    toggleSpinner();
   }
 
   toggleSpinner() {

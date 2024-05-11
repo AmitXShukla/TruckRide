@@ -28,8 +28,8 @@ class BidsState extends State<Bids> {
 
   @override
   void initState() {
-    loadAuthState();
     super.initState();
+    loadAuthState();
   }
 
   @override
@@ -446,6 +446,7 @@ class EditBidState extends State<EditBid> {
     final userData = await authBloc.getBidDoc("Bids", widget.docId);
 
     if (userData.isNotEmpty) {
+      setState(() {
       model.objectId = userData[0]["objectId"];
       model.rideId = userData[0]["objectId"];
       model.rideDttm = userData[0]["rideDttm"];
@@ -459,7 +460,8 @@ class EditBidState extends State<EditBid> {
       model.message = userData[0]["message"];
 
       _bidController.text = model.bid;
-      _messageController.text = model.message;
+      _messageController.text = model.message;  
+      });
     }
   }
 

@@ -70,8 +70,9 @@ class InboxState extends State<Inbox> {
 
   getData() async {
     toggleSpinner();
-    var data = await authBloc.getMessages("Messages", "-");
-    setState(() => results = data);
+    // var data = await authBloc.getMessages("Messages", "-");
+    // setState(() => results = data);
+    await authBloc.getMessages("Messages", "-").then((value) => setState(() => results = value));
     toggleSpinner();
   }
 

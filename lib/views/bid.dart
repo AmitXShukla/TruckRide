@@ -59,10 +59,9 @@ class BidState extends State<Bid> {
 
   getData() async {
     toggleSpinner();
-    var res = await authBloc.getBiddableRides("Rides");
-    setState(() {
+    await authBloc.getBiddableRides("Rides").then((res) => setState(() {
       results = res;
-    });
+    }));
     toggleSpinner();
   }
 

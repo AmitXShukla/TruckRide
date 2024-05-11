@@ -35,8 +35,8 @@ class RidesState extends State<Rides> {
 
   @override
   void initState() {
-    loadAuthState();
     super.initState();
+    loadAuthState();
   }
 
   @override
@@ -80,11 +80,16 @@ class RidesState extends State<Rides> {
   }
 
   void sendMessage(String msg) async {
-    var username = await authBloc.getUser();
+    // var username = await authBloc.getUser();
+    // // storing user uid/objectId from users class, as a field into message record
+    // msgModel.uid =
+    //     (username?.get("objectId") == null) ? "-" : username?.get("objectId");
+    await authBloc.getUser().then((username) => {
+      msgModel.uid =
+        (username?.get("objectId") == null) ? "-" : username?.get("objectId")
+    });
     // storing user uid/objectId from users class, as a field into message record
     msgModel.dttm = DateTime.now().toString();
-    msgModel.uid =
-        (username?.get("objectId") == null) ? "-" : username?.get("objectId");
     msgModel.to = "-";
     msgModel.message = msg;
 
@@ -475,11 +480,16 @@ class EditRideState extends State<EditRide> {
   void loadAuthState() async {
     // storing user uid/objectId from users class, as a field into message record
     var username = await authBloc.getUser();
-    final userState = await authBloc.isSignedIn();
-    setState(() => isUserValid = userState);
+    // final userState = await authBloc.isSignedIn();
+    // setState(() => isUserValid = userState);
+    await authBloc.isSignedIn().then((userState) => {
+  setState(() => isUserValid = userState)
+    });
+
     final userData = await authBloc.getDoc("Rides", widget.docId);
 
     if (userData.isNotEmpty) {
+      setState(() {
       model.objectId = userData[0]["objectId"];
       model.uid =
           (username?.get("objectId") == null) ? "-" : username?.get("objectId");
@@ -495,7 +505,8 @@ class EditRideState extends State<EditRide> {
       _fromController.text = model.from;
       _toController.text = model.to;
       _loadTypeController.text = model.loadType;
-      _messageController.text = model.message;
+      _messageController.text = model.message;  
+      });
     }
   }
 
@@ -954,24 +965,44 @@ class AcceptBidState extends State<AcceptBid> {
   void loadAuthState() async {
     // storing user uid/objectId from users class, as a field into message record
     var username = await authBloc.getUser();
-    final userState = await authBloc.isSignedIn();
-    setState(() => isUserValid = userState);
-    final rideData = await authBloc.getDoc("Rides", widget.docId);
+    // final userState = await authBloc.isSignedIn();
+    // setState(() => isUserValid = userState);
+    await authBloc.isSignedIn().then((userState) => {
+      setState(() => isUserValid = userState)
+    });
+    // final rideData = await authBloc.getDoc("Rides", widget.docId);
 
-    if (rideData.isNotEmpty) {
-      setState(() {
-        rideModel.objectId = rideData[0]["objectId"];
-      rideModel.uid =
-          (username?.get("objectId") == null) ? "-" : username?.get("objectId");
-      rideModel.dttm = rideData[0]["dttm"];
-      rideModel.from = rideData[0]["from"];
-      rideModel.to = rideData[0]["to"];
-      rideModel.message = rideData[0]["message"];
-      rideModel.loadType = rideData[0]["loadType"];
-      rideModel.status = rideData[0]["status"];
-      rideModel.fileURL = rideData[0]["fileURL"];
-      });
-    }
+    // if (rideData.isNotEmpty) {
+    //   setState(() {
+    //     rideModel.objectId = rideData[0]["objectId"];
+    //   rideModel.uid =
+    //       (username?.get("objectId") == null) ? "-" : username?.get("objectId");
+    //   rideModel.dttm = rideData[0]["dttm"];
+    //   rideModel.from = rideData[0]["from"];
+    //   rideModel.to = rideData[0]["to"];
+    //   rideModel.message = rideData[0]["message"];
+    //   rideModel.loadType = rideData[0]["loadType"];
+    //   rideModel.status = rideData[0]["status"];
+    //   rideModel.fileURL = rideData[0]["fileURL"];
+    //   });
+    await authBloc.getDoc("Rides", widget.docId).then((rideData) => {
+          if (rideData.isNotEmpty)
+            {
+              setState(() {
+                rideModel.objectId = rideData[0]["objectId"];
+                rideModel.uid = (username?.get("objectId") == null)
+                    ? "-"
+                    : username?.get("objectId");
+                rideModel.dttm = rideData[0]["dttm"];
+                rideModel.from = rideData[0]["from"];
+                rideModel.to = rideData[0]["to"];
+                rideModel.message = rideData[0]["message"];
+                rideModel.loadType = rideData[0]["loadType"];
+                rideModel.status = rideData[0]["status"];
+                rideModel.fileURL = rideData[0]["fileURL"];
+              })
+            }
+        });
   }
 
   @override

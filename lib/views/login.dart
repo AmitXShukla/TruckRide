@@ -151,11 +151,14 @@ class LogInState extends State<LogIn> {
         child: Center(
           child: Column(
             children: <Widget>[
-              const Image(
-                image: AssetImage('../assets/afronalalogo.png'),
-                width: 200,
-                height: 200,
-              ),
+              // const Image(
+              //   image: AssetImage('../assets/afronalalogo.png'),
+              //   width: 200,
+              //   height: 200,
+              // ),
+              const Icon(Icons.electric_rickshaw_outlined,
+                                    color: Colors.greenAccent, size: 134),
+              const SizedBox(width: 10,height: 20,),
               SizedBox(
                   width: 300.0,
                   // margin: const EdgeInsets.only(top: 25.0),

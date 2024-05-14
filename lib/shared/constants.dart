@@ -11,7 +11,7 @@ var mailCount = 0;
 var userType = "Customer";
 bool isBright = true;
 
-const cAppTitle = "afro nala";
+const cAppTitle = "Deliverify";
 // ignore: camel_case_types
 enum cMessageType { error, success }
 const cBodyText = TextStyle(
@@ -132,8 +132,8 @@ enum ScreenSelected {
 PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
     return AppBar(
       leading: IconButton(
-        // icon: const Icon(Icons.menu),
-        icon: const Image(image: AssetImage('../assets/afronalalogo.png')),
+        icon: const Icon(Icons.electric_rickshaw_outlined, color: Colors.greenAccent),
+        // icon: const Image(image: AssetImage('../assets/afronalalogo.png')),
         // onPressed: () { Scaffold.of(context).openDrawer(); },
         onPressed: () { Navigator.pushNamed(
                   context,
@@ -148,7 +148,7 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
             tooltip: 'about us',
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Powered by Afro Nala.')));
+                  const SnackBar(content: Text('Powered by elish consulting.')));
             },
           ),
           IconButton(
@@ -209,8 +209,9 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
     username.then((value) => userType = (value.isEmpty) ? "Customer" : value[0]["userType"]);
     return AppBar(
       leading: IconButton(
+        icon: const Icon(Icons.electric_rickshaw_outlined, color: Colors.greenAccent),
         // icon: const Icon(Icons.menu),
-        icon: const Image(image: AssetImage('../assets/afronalalogo.png')),
+        // icon: const Image(image: AssetImage('../assets/afronalalogo.png')),
         // onPressed: () { Scaffold.of(context).openDrawer(); },
         onPressed: () { Navigator.pushNamed(
                   context,
@@ -288,6 +289,14 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
             const PopupMenuItem(
               value: 2,
               child: Text('አማርኛ', style: cNavText,),
+            ),
+            const PopupMenuItem(
+              value: 2,
+              child: Text('Inglés', style: cNavText,),
+            ),
+            const PopupMenuItem(
+              value: 2,
+              child: Text('हिंदी', style: cNavText,),
             ),
             const PopupMenuItem(
               value: 3,

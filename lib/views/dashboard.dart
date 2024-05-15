@@ -7,9 +7,11 @@ import '../models/validators.dart';
 class Dashboard extends StatefulWidget {
   static const routeName = '/dashboard';
   Dashboard({super.key,
-  required this.handleBrightnessChange});
+  required this.handleBrightnessChange
+  , required this.setLocale});
 
   Function(bool useLightMode) handleBrightnessChange;
+  Function(Locale _locale) setLocale;
   @override
   DashboardState createState() => DashboardState();
 }

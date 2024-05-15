@@ -10,9 +10,11 @@ import 'package:flutter/cupertino.dart';
 // ignore: must_be_immutable
 class Bid extends StatefulWidget {
   static const routeName = '/bid';
-  Bid({super.key, required this.handleBrightnessChange});
+  Bid({super.key, required this.handleBrightnessChange
+      , required this.setLocale});
 
   Function(bool useLightMode) handleBrightnessChange;
+  Function(Locale _locale) setLocale;
   @override
   BidState createState() => BidState();
 }

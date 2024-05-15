@@ -10,9 +10,11 @@ import '../blocs/auth.bloc.dart';
 class SignUp extends StatefulWidget {
   static const routeName = '/signup';
   SignUp({super.key,
-  required this.handleBrightnessChange});
+  required this.handleBrightnessChange
+  , required this.setLocale});
 
   Function(bool useLightMode) handleBrightnessChange;
+  Function(Locale _locale) setLocale;
   @override
   SignUpState createState() => SignUpState();
 }

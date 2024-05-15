@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 // import 'package:flutter/widgets.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../shared/constants.dart';
 import '../models/datamodel.dart';
 import '../models/validators.dart';
@@ -8,9 +9,11 @@ import '../blocs/auth.bloc.dart';
 // ignore: must_be_immutable
 class LogIn extends StatefulWidget {
   static const routeName = '/login';
-  LogIn({super.key, required this.handleBrightnessChange});
+  LogIn({super.key, required this.handleBrightnessChange
+    , required this.setLocale});
 
   Function(bool useLightMode) handleBrightnessChange;
+  Function(Locale locale) setLocale;
 
   @override
   LogInState createState() => LogInState();
@@ -85,7 +88,7 @@ class LogInState extends State<LogIn> {
 
     if (userAuth.success) {
       showMessage(true, "success",
-          "Login successful. Please review your user settings.");
+          AppLocalizations.of(context)!.cMsg1);
       await Future.delayed(const Duration(seconds: 2));
       navigateToUser();
     } else {
@@ -107,7 +110,7 @@ class LogInState extends State<LogIn> {
     toggleSpinner();
     var val = await authBloc.logout();
     if (val == true) {
-      showMessage(true, "success", "Successfully signed out.");
+      showMessage(true, "success", AppLocalizations.of(context)!.cMsg2);
       setState(() => isUserValid = false);
       navigateToUser();
     } else {
@@ -121,10 +124,10 @@ class LogInState extends State<LogIn> {
     var val = await authBloc.forgotPassword(model.email);
     if (val.success == true) {
       showMessage(true, "success",
-          "Reset password email is sent to your registered email.");
+          AppLocalizations.of(context)!.cMsg3);
     } else {
       showMessage(
-          true, "error", "something went wrong, please contact your Admin.");
+          true, "error", AppLocalizations.of(context)!.cMsg4);
     }
     toggleSpinner();
   }
@@ -177,8 +180,8 @@ class LogInState extends State<LogIn> {
                       icon: const Icon(Icons.email),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16.0)),
-                      hintText: 'username@domain.com',
-                      labelText: 'EmailID *',
+                      hintText: AppLocalizations.of(context)!.cEmailID,
+                      labelText: AppLocalizations.of(context)!.cEmailHint,
                       // errorText: snapshot.error,
                     ),
                   )),
@@ -202,8 +205,8 @@ class LogInState extends State<LogIn> {
                       icon: const Icon(Icons.lock_outline),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16.0)),
-                      hintText: 'enter password',
-                      labelText: 'Password *',
+                      hintText: AppLocalizations.of(context)!.cEnterPassword,
+                      labelText: AppLocalizations.of(context)!.cPassword,
                     ),
                   )),
               Container(
@@ -231,7 +234,7 @@ class LogInState extends State<LogIn> {
                 onTap: () {
                   login("Google");
                 },
-                child: const Chip(
+                child: Chip(
                     backgroundColor: Colors.red,
                     // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
                     shape: RoundedRectangleBorder(
@@ -241,7 +244,7 @@ class LogInState extends State<LogIn> {
                       topLeft: Radius.circular(15),
                       bottomLeft: Radius.circular(15),
                     )),
-                    label: Text("Sign In with Google")),
+                    label: Text(AppLocalizations.of(context)!.cSignGoogle)),
               ),
               Container(
                 margin: const EdgeInsets.only(top: 15.0),
@@ -253,12 +256,12 @@ class LogInState extends State<LogIn> {
                     '/signup',
                   );
                 },
-                child: const Chip(
+                child: Chip(
                     avatar: CircleAvatar(
                       backgroundColor: Colors.black26,
                       child: Text("+"),
                     ),
-                    label: Text("create new Account")),
+                    label: Text(AppLocalizations.of(context)!.cNAccount)),
               ),
               Container(
                 margin: const EdgeInsets.only(top: 15.0),
@@ -268,7 +271,7 @@ class LogInState extends State<LogIn> {
                     // forgotPassword();
                     showAlertDialog(context);
                   },
-                  child: const Text("forgot password"))
+                  child: Text(AppLocalizations.of(context)!.cFPassword))
             ],
           ),
         ),
@@ -279,7 +282,7 @@ class LogInState extends State<LogIn> {
   Widget signinSubmitBtn(context) {
     return ElevatedButton(
         onPressed: _btnEnabled == true ? () => login("email") : null,
-        child: const Text('Sign In'));
+        child: Text(AppLocalizations.of(context)!.cSignIn));
   }
 
   Widget settingsPage(context) {

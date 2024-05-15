@@ -8,6 +8,8 @@ import 'package:servicenow/views/inbox.dart';
 import 'package:servicenow/views/login.dart';
 import 'package:servicenow/views/dashboard.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 // import 'package:web_startup_analyzer/web_startup_analyzer.dart';
 
 import '../shared/constants.dart';
@@ -47,6 +49,7 @@ class App extends StatefulWidget {
 
   @override
   State<App> createState() => _AppState();
+  // static _AppState? of(BuildContext context) => context.findAncestorStateOfType<_AppState>();
 }
 
 class _AppState extends State<App> {
@@ -97,11 +100,37 @@ class _AppState extends State<App> {
     });
   }
 
+  // Locale _locale = "en" as Locale;
+  Locale _locale = const Locale('es');
+
+  void setLocale(Locale value) {
+    setState(() {
+      _locale = value;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: cAppTitle,
+      // title: AppLocalizations.of(context)!.helloWorld,
+      onGenerateTitle: (context) {
+        return AppLocalizations.of(context)!.helloWorld;
+      },
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      // supportedLocales: const [
+      //   Locale('en'), // English
+      //   Locale('es'), // Spanish
+      //   Locale('hi'), // Hindi
+      // ],
+      supportedLocales: AppLocalizations.supportedLocales,
+      // locale: const Locale('en'),
+      locale: _locale,
       themeMode: themeMode,
       theme: ThemeData.dark(),
       darkTheme: ThemeData.light(),
@@ -135,18 +164,18 @@ class _AppState extends State<App> {
       //   handleImageSelect: handleImageSelect,
       //   colorSelectionMethod: colorSelectionMethod,
       // ),
-      home: LogIn(handleBrightnessChange: handleBrightnessChange),
+      home: LogIn(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
         routes: {
         // '/': (context) => const LogIn(), //- can not set if home: ERPHomePage() is setup, only works with initiated route
-        SignUp.routeName: (context) => SignUp(handleBrightnessChange: handleBrightnessChange),
-        Dashboard.routeName: (context) => Dashboard(handleBrightnessChange: handleBrightnessChange),
-        Settings.routeName: (context) => Settings(handleBrightnessChange: handleBrightnessChange),
-        Inbox.routeName: (context) => Inbox(handleBrightnessChange: handleBrightnessChange),
-        Rides.routeName: (context) => Rides(handleBrightnessChange: handleBrightnessChange),
-        Message.routeName: (context) => Message(handleBrightnessChange: handleBrightnessChange),
-        Ride.routeName: (context) => Ride(handleBrightnessChange: handleBrightnessChange),
-        Bids.routeName: (context) => Bids(handleBrightnessChange: handleBrightnessChange),
-        Bid.routeName: (context) => Bid(handleBrightnessChange: handleBrightnessChange),
+        SignUp.routeName: (context) => SignUp(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
+        Dashboard.routeName: (context) => Dashboard(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
+        Settings.routeName: (context) => Settings(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
+        Inbox.routeName: (context) => Inbox(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
+        Rides.routeName: (context) => Rides(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
+        Message.routeName: (context) => Message(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
+        Ride.routeName: (context) => Ride(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
+        Bids.routeName: (context) => Bids(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
+        Bid.routeName: (context) => Bid(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
       },
     );
   }

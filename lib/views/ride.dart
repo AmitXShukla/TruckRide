@@ -8,9 +8,11 @@ import '../blocs/auth.bloc.dart';
 class Ride extends StatefulWidget {
   static const routeName = '/ride';
   Ride({super.key,
-  required this.handleBrightnessChange});
+  required this.handleBrightnessChange
+  , required this.setLocale});
 
   Function(bool useLightMode) handleBrightnessChange;
+  Function(Locale _locale) setLocale;
   @override
   RideState createState() => RideState();
 }

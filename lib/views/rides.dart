@@ -10,9 +10,11 @@ import 'package:flutter/cupertino.dart';
 // ignore: must_be_immutable
 class Rides extends StatefulWidget {
   static const routeName = '/rides';
-  Rides({super.key, required this.handleBrightnessChange});
+  Rides({super.key, required this.handleBrightnessChange
+  , required this.setLocale});
 
   Function(bool useLightMode) handleBrightnessChange;
+  Function(Locale _locale) setLocale;
   @override
   RidesState createState() => RidesState();
 }

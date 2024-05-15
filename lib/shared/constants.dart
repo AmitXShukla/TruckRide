@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../blocs/auth.bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const double narrowScreenWidthThreshold = 450;
 
@@ -141,7 +142,8 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
                 );},
         tooltip: "home",
       ),
-      title: const Text(cAppTitle, style: cBodyText,),
+      // title: const Text(cAppTitle, style: cBodyText,),
+      title: Text(AppLocalizations.of(context)!.cAppTitle, style: cBodyText,),
       actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.power),
@@ -171,9 +173,14 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
           initialValue: 1,
           tooltip: 'toggle language',
           onSelected: (item) {
-            // setState(() {
-            //   selectedItem = item;
-            // });
+            switch (item) { // Your Enum Value which you have passed
+                case 1:
+                  widget.setLocale(const Locale.fromSubtags(languageCode: 'en'));
+                  break;
+                case 2:
+                  widget.setLocale(const Locale.fromSubtags(languageCode: 'es'));
+                  break;
+            }
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry>[
             const PopupMenuItem(
@@ -182,11 +189,7 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
             ),
             const PopupMenuItem(
               value: 2,
-              child: Text('አማርኛ', style: cNavText,),
-            ),
-            const PopupMenuItem(
-              value: 3,
-              child: Text('Afaan Oromoo'),
+              child: Text('Spanish', style: cNavText,),
             )
           ],
         ),
@@ -219,7 +222,8 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
                 );},
         tooltip: "home",
       ),
-      title: const Text(cAppTitle, style: cBodyText,),
+      // title: const Text(cAppTitle, style: cBodyText,),
+      title: Text(AppLocalizations.of(context)!.cAppTitle, style: cBodyText,),
       actions: <Widget>[
         (userType == "Customer") ? 
         IconButton(
@@ -277,9 +281,14 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
           initialValue: 1,
           tooltip: 'toggle language',
           onSelected: (item) {
-            // setState(() {
-            //   selectedItem = item;
-            // });
+            switch (item) { // Your Enum Value which you have passed
+                case 1:
+                  widget.setLocale(const Locale.fromSubtags(languageCode: 'en'));
+                  break;
+                case 2:
+                  widget.setLocale(const Locale.fromSubtags(languageCode: 'es'));
+                  break;
+            }
           },
           itemBuilder: (BuildContext context) => <PopupMenuEntry>[
             const PopupMenuItem(
@@ -288,19 +297,7 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
             ),
             const PopupMenuItem(
               value: 2,
-              child: Text('አማርኛ', style: cNavText,),
-            ),
-            const PopupMenuItem(
-              value: 2,
-              child: Text('Inglés', style: cNavText,),
-            ),
-            const PopupMenuItem(
-              value: 2,
-              child: Text('हिंदी', style: cNavText,),
-            ),
-            const PopupMenuItem(
-              value: 3,
-              child: Text('Afaan Oromoo'),
+              child: Text('Spanish', style: cNavText,),
             ),
           ],
         ),

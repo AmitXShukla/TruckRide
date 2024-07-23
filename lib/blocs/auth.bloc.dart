@@ -14,6 +14,17 @@ class AuthBloc extends Object {
     var response = await user.login();
     return response;
   }
+
+  setUserACLs() async {
+    final ParseCloudFunction function = ParseCloudFunction("setUsersAcls");
+    final ParseResponse parseResponse =
+        await function.execute();
+    if (parseResponse.success && parseResponse.result != null) {
+      return true;
+    }
+    return false;
+  }
+
   
   logInWithGoogle(){
 
@@ -22,7 +33,7 @@ class AuthBloc extends Object {
   signUpWithEmail(LoginDataModel model) async {
     final username = model.email.trim();
     final email = model.email.trim();
-    final password = model.email.trim();
+    final password = model.password.trim();
 
     final user = ParseUser(username, password, email);
     var response = await user.signUp();
@@ -41,6 +52,221 @@ class AuthBloc extends Object {
     final ParseResponse parseResponse = await user.requestPasswordReset();
     return parseResponse;
   }
+
+  
+  getUserSettingsDoc() async {
+    final ParseCloudFunction function = ParseCloudFunction("getProfile");
+    final ParseResponse parseResponse =
+        await function.execute();
+    if (parseResponse.success && parseResponse.result != null) {
+      return parseResponse.result[0];
+    }
+  }
+  getUserSettingsDocADMIN(String objectId) async {
+    final ParseCloudFunction function;
+    final Map<String, dynamic> params;
+    function = ParseCloudFunction("getProfileADMIN");
+    params = <String, dynamic>{
+        'objectId': objectId
+      };
+    final ParseResponse parseResponse =
+      await function.executeObjectFunction<ParseObject>(parameters: params);
+    // print(parseResponse.results?[0]["result"][0].objectId);
+    if (parseResponse.success && parseResponse.result != null) {
+      return parseResponse.results?[0]["result"][0];
+    }
+  }
+  // getUserRideDocADMIN(String objectId) async {
+  //   print(objectId);
+  //   final ParseCloudFunction function;
+  //   final Map<String, dynamic> params;
+  //   function = ParseCloudFunction("getUserRideDocADMIN");
+  //   params = <String, dynamic>{
+  //       'objectId': objectId
+  //     };
+  //   final ParseResponse parseResponse =
+  //     await function.executeObjectFunction<ParseObject>(parameters: params);
+  //   // print(parseResponse.results?[0]["result"][0].objectId);
+  //   if (parseResponse.success && parseResponse.result != null) {
+  //     return parseResponse.results?[0]["result"][0];
+  //   }
+  // }
+  
+  setUserSettingsDocADMIN(UserDataModel model) async {
+    final ParseCloudFunction function;
+    final Map<String, dynamic> params;
+      function = ParseCloudFunction("setProfileADMIN");
+      params = <String, dynamic>{
+        'objectId': model.objectId,
+        'uid': model.uid,
+        'username': model.userName,
+        'userType': model.userType,
+        'name': model.name,
+        'email': model.email,
+        'phone': model.phone,
+        'address': model.address
+      };
+ 
+    final ParseResponse parseResponse =
+      await function.executeObjectFunction<ParseObject>(parameters: params);
+    if (parseResponse.success && parseResponse.result != null) {
+      return true;
+    }
+    return false;
+  }
+
+  // getUserRidesADMIN(String objectId) async {
+  //   final ParseCloudFunction function;
+  //   final Map<String, dynamic> params;
+  //   function = ParseCloudFunction("getUserRidesADMIN");
+  //   params = <String, dynamic>{
+  //       'objectId': objectId
+  //     };
+  //   final ParseResponse parseResponse =
+  //     await function.executeObjectFunction<ParseObject>(parameters: params);
+  //   if (parseResponse.success && parseResponse.result != null) {
+  //     // return parseResponse.results;
+  //     return parseResponse.results?[0]["result"];
+  //   }
+  // }
+  
+  setUserFileDoc(String docType, String docId, file) async {
+    final ParseCloudFunction function;
+    final Map<String, dynamic> params;
+    function = ParseCloudFunction("setDocs");
+    params = <String, dynamic>{
+        'docType': docType,
+        'docId': docId,
+        'file': file
+      };
+ 
+    final ParseResponse parseResponse =
+      await function.executeObjectFunction<ParseObject>(parameters: params);
+    if (parseResponse.success && parseResponse.result != null) {
+      return true;
+    }
+    return false;
+  }
+
+  setUserFileDocADMIN(String docType, String docId, String uid, file) async {
+    final ParseCloudFunction function;
+    final Map<String, dynamic> params;
+    function = ParseCloudFunction("setDocsADMIN");
+    params = <String, dynamic>{
+        'docType': docType,
+        'docId': docId,
+        'uid': uid,
+        'file': file
+      };
+ 
+    final ParseResponse parseResponse =
+      await function.executeObjectFunction<ParseObject>(parameters: params);
+    if (parseResponse.success && parseResponse.result != null) {
+      return true;
+    }
+    return false;
+  }
+
+  Future<List> getGalleryList(String docType, String docId) async {
+    final ParseCloudFunction function;
+    final Map<String, dynamic> params;
+    function = ParseCloudFunction("getDocs");
+    params = <String, dynamic>{
+        'docType': docType,
+        'docId': docId,
+      }; 
+    final ParseResponse parseResponse =
+      await function.executeObjectFunction<ParseObject>(parameters: params);
+      // print(parseResponse.results?[0]["result"]);
+    if (parseResponse.success && parseResponse.result != null) {
+      return parseResponse.results?[0]["result"] as List;
+    }
+    return [];
+  }
+
+  Future<List> getGalleryListADMIN(String docType, String docId, String uid) async {
+    final ParseCloudFunction function;
+    final Map<String, dynamic> params;
+    function = ParseCloudFunction("getDocsADMIN");
+    params = <String, dynamic>{
+        'docType': docType,
+        'docId': docId,
+        'uid': uid,
+      }; 
+    final ParseResponse parseResponse =
+      await function.executeObjectFunction<ParseObject>(parameters: params);
+      // print(parseResponse.results?[0]["result"]);
+    if (parseResponse.success && parseResponse.result != null) {
+      return parseResponse.results?[0]["result"] as List;
+    }
+    return [];
+  }
+
+  // Future<List<ParseObject>> getGalleryList(String docType) async {
+  //   QueryBuilder<ParseObject> queryPublisher =
+  //       QueryBuilder<ParseObject>(ParseObject('Gallery'))
+  //         ..orderByAscending('createdAt');
+  //   final ParseResponse apiResponse = await queryPublisher.query();
+  //   print(apiResponse.result);
+
+  //   if (apiResponse.success && apiResponse.results != null) {
+  //     return apiResponse.results as List<ParseObject>;
+  //   } else {
+  //     return [];
+  //   }
+  // }
+  
+  setUserSettingsDoc(UserDataModel model) async {
+    final ParseCloudFunction function = ParseCloudFunction("setProfile");
+    final Map<String, dynamic> params = <String, dynamic>{
+        'objectId': model.objectId,
+        'username': model.userName,
+        'userType': model.userType,
+        'name': model.name,
+        'email': model.email,
+        'phone': model.phone,
+        'address': model.address
+      };
+    final ParseResponse parseResponse =
+      await function.executeObjectFunction<ParseObject>(parameters: params);
+    if (parseResponse.success && parseResponse.result != null) {
+      return true;
+    }
+    return false;
+  }
+  // setUserSettingsDoc(UserDataModel model) async {
+  //   final ParseCloudFunction function;
+  //   final Map<String, dynamic> params;
+  //   if (model.objectId == "-") {
+  //     function = ParseCloudFunction("setProfile");
+  //     params = <String, dynamic>{
+  //       'username': model.userName,
+  //       'userType': model.userType,
+  //       'name': model.name,
+  //       'email': model.email,
+  //       'phone': model.phone,
+  //       'address': model.address
+  //     };
+  //   } else {
+  //     function = ParseCloudFunction("updateUserSettingsDoc");
+  //     params = <String, dynamic>{
+  //       'objectId': model.objectId,
+  //       'username': model.userName,
+  //       'userType': model.userType,
+  //       'name': model.name,
+  //       'email': model.email,
+  //       'phone': model.phone,
+  //       'address': model.address
+  //     };
+  //   }
+ 
+  //   final ParseResponse parseResponse =
+  //     await function.executeObjectFunction<ParseObject>(parameters: params);
+  //   if (parseResponse.success && parseResponse.result != null) {
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
   Future<ParseUser?> getUser() async {
     ParseUser? currentUser = await ParseUser.currentUser() as ParseUser?;
@@ -148,19 +374,19 @@ class AuthBloc extends Object {
       }
   }
 
-  Future<List<ParseObject>> getRideDoc(String classId, String docId) async {
-    QueryBuilder<ParseObject> parseQuery = 
-      QueryBuilder(ParseObject(classId));
-      parseQuery.whereEqualTo('objectId', docId);
-      parseQuery.orderByDescending('createdAt');
+  // Future<List<ParseObject>> getRideDoc(String classId, String docId) async {
+  //   QueryBuilder<ParseObject> parseQuery = 
+  //     QueryBuilder(ParseObject(classId));
+  //     parseQuery.whereEqualTo('objectId', docId);
+  //     parseQuery.orderByDescending('createdAt');
     
-    final ParseResponse apiResponse = await parseQuery.query();
-    if (apiResponse.success && apiResponse.results != null) {
-        return apiResponse.results as List<ParseObject>;
-        } else {
-          return [];
-      }
-  }
+  //   final ParseResponse apiResponse = await parseQuery.query();
+  //   if (apiResponse.success && apiResponse.results != null) {
+  //       return apiResponse.results as List<ParseObject>;
+  //       } else {
+  //         return [];
+  //     }
+  // }
   Future<List<ParseObject>> getBidDoc(String classId, String docId) async {
     QueryBuilder<ParseObject> parseQuery = 
       QueryBuilder(ParseObject(classId));
@@ -176,7 +402,6 @@ class AuthBloc extends Object {
   }
 
   Future<List<ParseObject>> getDoc(String classId, String docId) async {
-    // userID
     var username = await authBloc.getUser();
     var uid = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
     QueryBuilder<ParseObject> parseQuery = 
@@ -198,34 +423,34 @@ class AuthBloc extends Object {
     await todo.delete();
   }
 
-  Future<List<ParseObject>> getSettings(UserDataModel model) async {
-    QueryBuilder<ParseObject> parseQuery = 
-      QueryBuilder(ParseObject("Settings"));
-      parseQuery.whereEqualTo('uid', model.uid);
-      parseQuery.orderByDescending('createdAt');
-    final ParseResponse apiResponse = await parseQuery.query();
-    if (apiResponse.success && apiResponse.results != null) {
-        return apiResponse.results as List<ParseObject>;
-        } else {
-          return [];
-      }
-  }
+  // Future<List<ParseObject>> getSettings(UserDataModel model) async {
+  //   QueryBuilder<ParseObject> parseQuery = 
+  //     QueryBuilder(ParseObject("Settings"));
+  //     parseQuery.whereEqualTo('uid', model.uid);
+  //     parseQuery.orderByDescending('createdAt');
+  //   final ParseResponse apiResponse = await parseQuery.query();
+  //   if (apiResponse.success && apiResponse.results != null) {
+  //       return apiResponse.results as List<ParseObject>;
+  //       } else {
+  //         return [];
+  //     }
+  // }
 
-  Future<List<ParseObject>> getUserType() async {
-    var username = await authBloc.getUser();
-    var uid = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
+  // Future<List<ParseObject>> getUserType() async {
+  //   var username = await authBloc.getUser();
+  //   var uid = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
 
-    QueryBuilder<ParseObject> parseQuery = 
-      QueryBuilder(ParseObject("Settings"));
-      parseQuery.whereEqualTo('uid', uid);
-      parseQuery.orderByDescending('createdAt');
-    final ParseResponse apiResponse = await parseQuery.query();
-    if (apiResponse.success && apiResponse.results != null) {
-        return apiResponse.results as List<ParseObject>;
-        } else {
-          return [];
-      }
-  }
+  //   QueryBuilder<ParseObject> parseQuery = 
+  //     QueryBuilder(ParseObject("Settings"));
+  //     parseQuery.whereEqualTo('uid', uid);
+  //     parseQuery.orderByDescending('createdAt');
+  //   final ParseResponse apiResponse = await parseQuery.query();
+  //   if (apiResponse.success && apiResponse.results != null) {
+  //       return apiResponse.results as List<ParseObject>;
+  //       } else {
+  //         return [];
+  //     }
+  // }
 
 
   Future<bool> setData(String classId, model) async {
@@ -242,38 +467,134 @@ class AuthBloc extends Object {
     return true;
   }
 
-  Future<bool> setRide(String classId, model) async {
-    ParseObject data;
-    if (model.objectId == "-") {
-            data = ParseObject(classId)
-              // ..objectId = model.uid
-              ..set('uid', model.uid)
-              ..set('dttm', model.dttm)
-              ..set('from', model.from)
-              ..set('to', model.to)
-              ..set('message', model.message)
-              ..set('loadType', model.loadType)
-              ..set('status', model.status)
-              ..set('fileURL', model.fileURL);
+  // Future<bool> setRide(String classId, model) async {
+  //   ParseObject data;
+  //   if (model.objectId == "-") {
+  //           data = ParseObject(classId)
+  //             // ..objectId = model.uid
+  //             ..set('uid', model.uid)
+  //             ..set('dttm', model.dttm)
+  //             ..set('from', model.from)
+  //             ..set('to', model.to)
+  //             ..set('message', model.message)
+  //             ..set('loadType', model.loadType)
+  //             ..set('status', model.status)
+  //             ..set('fileURL', model.fileURL);
+  //   } else {
+  //           data = ParseObject(classId)
+  //             ..objectId = model.objectId
+  //             ..set('uid', model.uid)
+  //             ..set('dttm', model.dttm)
+  //             ..set('from', model.from)
+  //             ..set('to', model.to)
+  //             ..set('message', model.message)
+  //             ..set('loadType', model.loadType)
+  //             ..set('status', model.status)
+  //             ..set('fileURL', model.fileURL);
+  //   }
+  //   final ParseResponse apiResponse = await data.save();
+  //   if (apiResponse.success && apiResponse.results != null) {
+  //       return true;
+  //       } else {
+  //       return false;
+  //     }
+  // }
+
+// Ride function start
+Future getRides(String? srchTxt) async {
+    final ParseCloudFunction function = ParseCloudFunction("getRides");
+    final Map<String, dynamic> params = <String, dynamic>{'srchTxt': srchTxt};
+    final ParseResponse parseResponse =
+        await function.executeObjectFunction<ParseObject>(parameters: params);
+        // print(parseResponse.results);
+    if (parseResponse.success && parseResponse.results != null) {
+        return (parseResponse.results as List)[0]["result"];
     } else {
-            data = ParseObject(classId)
-              ..objectId = model.objectId
-              ..set('uid', model.uid)
-              ..set('dttm', model.dttm)
-              ..set('from', model.from)
-              ..set('to', model.to)
-              ..set('message', model.message)
-              ..set('loadType', model.loadType)
-              ..set('status', model.status)
-              ..set('fileURL', model.fileURL);
+      return [];
     }
-    final ParseResponse apiResponse = await data.save();
-    if (apiResponse.success && apiResponse.results != null) {
-        return true;
-        } else {
-        return false;
-      }
   }
+
+  Future<List> getRidesADMIN(String uid) async {
+    final ParseCloudFunction function = ParseCloudFunction("getRidesADMIN");
+    final Map<String, dynamic> params = <String, dynamic>{'uid': uid};
+    final ParseResponse parseResponse =
+        await function.executeObjectFunction<ParseObject>(parameters: params);
+    if (parseResponse.success && parseResponse.results != null) {
+        return (parseResponse.results as List)[0]["result"] as List;
+    } else {
+      return [];
+    }
+  }
+
+  Future<bool> setRide(RideModel model) async {
+    final ParseCloudFunction function = ParseCloudFunction("setRide");
+    final Map<String, dynamic> params = <String, dynamic>{
+        'objectId': model.objectId,
+        'uid': model.uid,
+        'dttm': model.dttm,
+        'from': model.from,
+        'to': model.to,
+        'message': model.message,
+        'loadType': model.loadType,
+        'status': model.status,
+      };
+    final ParseResponse parseResponse =
+      await function.executeObjectFunction<ParseObject>(parameters: params);
+    if (parseResponse.success && parseResponse.result != null) {
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> setRideADMIN(RideModel model) async {
+    final ParseCloudFunction function = ParseCloudFunction("setRideADMIN");
+    final Map<String, dynamic> params = <String, dynamic>{
+        'objectId': model.objectId,
+        'uid': model.uid,
+        'dttm': model.dttm,
+        'from': model.from,
+        'to': model.to,
+        'message': model.message,
+        'loadType': model.loadType,
+        'status': model.status,
+      };
+    final ParseResponse parseResponse =
+      await function.executeObjectFunction<ParseObject>(parameters: params);
+    if (parseResponse.success && parseResponse.result != null) {
+      return true;
+    }
+    return false;
+  }
+
+  getRide(String objectId) async {
+    final ParseCloudFunction function;
+    final Map<String, dynamic> params;
+    function = ParseCloudFunction("getRide");
+    params = <String, dynamic>{
+        'objectId': objectId
+      };
+    final ParseResponse parseResponse =
+      await function.executeObjectFunction<ParseObject>(parameters: params);
+    if (parseResponse.success && parseResponse.results != null) {
+      return parseResponse.results?[0]["result"];
+    }
+  }
+
+  getRideADMIN(String objectId) async {
+    final ParseCloudFunction function;
+    final Map<String, dynamic> params;
+    function = ParseCloudFunction("getRideADMIN");
+    params = <String, dynamic>{
+        'objectId': objectId
+      };
+    final ParseResponse parseResponse =
+      await function.executeObjectFunction<ParseObject>(parameters: params);
+    // print(parseResponse.results?[0]["result"][0].objectId);
+    if (parseResponse.success && parseResponse.result != null) {
+      return parseResponse.results?[0]["result"][0];
+    }
+  }
+// Ride function end
 
   Future<bool> setBid(String classId, model) async {
     ParseObject data;

@@ -133,9 +133,9 @@ class SignUpState extends State<SignUp> {
         child: Center(
           child: Column(
             children: <Widget>[
-              // const Image(image: AssetImage('../assets/afronalalogo.png'), width: 200, height: 200,),
-              const Icon(Icons.electric_rickshaw_outlined,
-                                    color: Colors.greenAccent, size: 134),
+              const Image(image: AssetImage('../assets/afronalalogo.png'), width: 200, height: 200,),
+              // const Icon(Icons.electric_rickshaw_outlined,
+              //                       color: Colors.greenAccent, size: 134),
               const SizedBox(width: 10,height: 20,),
               Container(
                   width: 300.0,

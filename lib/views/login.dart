@@ -55,9 +55,9 @@ class LogInState extends State<LogIn> {
     final userState = await authBloc.isSignedIn();
     setState(() => isUserValid = userState);
     if (isUserValid) {
-      var username = await authBloc.getUserType();
+      var username = await authBloc.getUserSettingsDoc();
       if (username.isNotEmpty) {
-        setState(() => userType = username[0]["userType"]);
+        setState(() => userType = username["userType"]);
       }
     }
   }
@@ -87,9 +87,13 @@ class LogInState extends State<LogIn> {
     }
 
     if (userAuth.success) {
+      var res = await authBloc.setUserACLs();
+      if (!res) {
+        showMessage(true, "error", "something went wrong, user ACL is not properly set.");
+      }
       showMessage(true, "success",
           AppLocalizations.of(context)!.cMsg1);
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
       navigateToUser();
     } else {
       showMessage(true, "error", userAuth.error!.message);
@@ -154,13 +158,13 @@ class LogInState extends State<LogIn> {
         child: Center(
           child: Column(
             children: <Widget>[
-              // const Image(
-              //   image: AssetImage('../assets/afronalalogo.png'),
-              //   width: 200,
-              //   height: 200,
-              // ),
-              const Icon(Icons.electric_rickshaw_outlined,
-                                    color: Colors.greenAccent, size: 134),
+              const Image(
+                image: AssetImage('../assets/afronalalogo.png'),
+                width: 200,
+                height: 200,
+              ),
+              // const Icon(Icons.electric_rickshaw_outlined,
+              //                       color: Colors.greenAccent, size: 134),
               const SizedBox(width: 10,height: 20,),
               SizedBox(
                   width: 300.0,
@@ -237,7 +241,7 @@ class LogInState extends State<LogIn> {
                 child: Chip(
                     backgroundColor: Colors.red,
                     // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                    shape: RoundedRectangleBorder(
+                    shape: const RoundedRectangleBorder(
                         borderRadius: BorderRadius.only(
                       topRight: Radius.circular(15),
                       bottomRight: Radius.circular(15),
@@ -257,7 +261,7 @@ class LogInState extends State<LogIn> {
                   );
                 },
                 child: Chip(
-                    avatar: CircleAvatar(
+                    avatar: const CircleAvatar(
                       backgroundColor: Colors.black26,
                       child: Text("+"),
                     ),

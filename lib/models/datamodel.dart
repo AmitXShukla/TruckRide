@@ -72,11 +72,10 @@ class RideModel {
   String message;
   String loadType;
   String status;
-  String fileURL;
   RideModel({required this.objectId, required this.uid,
             required this.dttm, required this.from, required this.to,
              required this.message, required this.loadType,
-             required this.status, required this.fileURL});
+             required this.status});
   factory RideModel.fromJson(Map<String, dynamic> json) {
     return RideModel(
         objectId: json['objectId'],
@@ -86,8 +85,7 @@ class RideModel {
         to: json['to'],
         message: json['message'],
         loadType: json['loadType'],
-        status: json['status'],
-        fileURL: json['fileURL']);
+        status: json['status']);
   }
 
   Map<String, dynamic> toJson() {
@@ -100,7 +98,6 @@ class RideModel {
     _data['message'] = message;
     _data['loadType'] = loadType;
     _data['status'] = status;
-    _data['fileURL'] = fileURL;
     return _data;
   }
 }

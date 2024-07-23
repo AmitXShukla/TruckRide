@@ -12,7 +12,7 @@ var mailCount = 0;
 var userType = "Customer";
 bool isBright = true;
 
-const cAppTitle = "Deliverify";
+const cAppTitle = "afro nala";
 // ignore: camel_case_types
 enum cMessageType { error, success }
 const cBodyText = TextStyle(
@@ -133,8 +133,8 @@ enum ScreenSelected {
 PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
     return AppBar(
       leading: IconButton(
-        icon: const Icon(Icons.electric_rickshaw_outlined, color: Colors.greenAccent),
-        // icon: const Image(image: AssetImage('../assets/afronalalogo.png')),
+        // icon: const Icon(Icons.electric_rickshaw_outlined, color: Colors.greenAccent),
+        icon: const Image(image: AssetImage('../assets/afronalalogo.png')),
         // onPressed: () { Scaffold.of(context).openDrawer(); },
         onPressed: () { Navigator.pushNamed(
                   context,
@@ -208,13 +208,14 @@ PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
   PreferredSizeWidget createCustomerNavBar(BuildContext context, widget) { 
     var data = authBloc.getMessages("Messages", "-");
     data.then((value) => mailCount = value.length);
-    var username = authBloc.getUserType();
-    username.then((value) => userType = (value.isEmpty) ? "Customer" : value[0]["userType"]);
+    // var username = authBloc.getUserType();
+    var username = authBloc.getUserSettingsDoc();
+    username.then((value) => userType = (value.isEmpty) ? "Customer" : value["userType"]);
     return AppBar(
       leading: IconButton(
-        icon: const Icon(Icons.electric_rickshaw_outlined, color: Colors.greenAccent),
+        // icon: const Icon(Icons.electric_rickshaw_outlined, color: Colors.greenAccent),
         // icon: const Icon(Icons.menu),
-        // icon: const Image(image: AssetImage('../assets/afronalalogo.png')),
+        icon: const Image(image: AssetImage('../assets/afronalalogo.png')),
         // onPressed: () { Scaffold.of(context).openDrawer(); },
         onPressed: () { Navigator.pushNamed(
                   context,

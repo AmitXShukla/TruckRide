@@ -4,11 +4,18 @@ import '../models/datamodel.dart';
 import '../models/validators.dart';
 import '../blocs/auth.bloc.dart';
 
+import 'package:image_picker/image_picker.dart';
+import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+
 // ignore: must_be_immutable
 class Settings extends StatefulWidget {
   static const routeName = '/settings';
-  Settings({super.key, required this.handleBrightnessChange
-  , required this.setLocale});
+  Settings(
+      {super.key,
+      required this.handleBrightnessChange,
+      required this.setLocale});
 
   Function(bool useLightMode) handleBrightnessChange;
   Function(Locale _locale) setLocale;
@@ -18,6 +25,7 @@ class Settings extends StatefulWidget {
 
 class SettingsState extends State<Settings> {
   bool isUserValid = true;
+  bool fileUpload = false;
   // bool light = true;
   // bool customer = true;
   // bool provider = false;
@@ -62,50 +70,36 @@ class SettingsState extends State<Settings> {
     toggleSpinner();
     final userState = await authBloc.isSignedIn();
     setState(() => isUserValid = userState);
-    var username = await authBloc.getUser();
-    // storing user uid/objectId from users class, as a field into settings record
-    model.uid =
-        (username?.get("objectId") == null) ? "-" : username?.get("objectId");
-    model.userName =
-        (username?.get("userName") == null) ? "-" : username?.get("userName");
     model.userType = dropdownValue;
-
-    // var res = await authBloc.getSettings(model);
-    // if (res.isNotEmpty) {
-    //   setState(() {
-    //     model.objectId = res[0].objectId.toString();
-    //     model.name = res[0]["name"];
-    //     _nameController.text = res[0]["name"];
-    //     model.email = res[0]["email"];
-    //     _emailController.text = res[0]["email"];
-    //     model.phone = res[0]["phone"];
-    //     _phoneController.text = res[0]["phone"];
-    //     model.address = res[0]["address"];
-    //     _addressController.text = res[0]["address"];
-    //     dropdownValue = res[0]["userType"];
-    //   });
-    // } else {
-    //   model.objectId = "-";
-    // }
-    await authBloc.getSettings(model).then((res) => {
-          if (res.isNotEmpty)
+    await authBloc.getUserSettingsDoc().then((res) => {
+          if (res != null)
             {
               setState(() {
-                model.objectId = res[0].objectId.toString();
-                model.name = res[0]["name"];
-                _nameController.text = res[0]["name"];
-                model.email = res[0]["email"];
-                _emailController.text = res[0]["email"];
-                model.phone = res[0]["phone"];
-                _phoneController.text = res[0]["phone"];
-                model.address = res[0]["address"];
-                _addressController.text = res[0]["address"];
-                dropdownValue = res[0]["userType"];
+                model.uid = res["uid"];
+                model.objectId = res["objectId"];
+                model.name = res["name"];
+                _nameController.text = res["name"];
+                model.email = res["email"];
+                _emailController.text = res["email"];
+                model.phone = res["phone"];
+                _phoneController.text = res["phone"];
+                model.address = res["address"];
+                _addressController.text = res["address"];
+                dropdownValue = res["userType"];
               })
             }
           else
-            {model.objectId = "-"}
+            {
+              setState(() {
+                model.objectId = "-";
+              })
+            }
         });
+    if (model.objectId != "-") {
+      setState(() {
+        fileUpload = true;
+      });
+    }
     toggleSpinner();
   }
 
@@ -141,9 +135,10 @@ class SettingsState extends State<Settings> {
     // ignore: prefer_typing_uninitialized_variables
     var userData;
     model.userType = dropdownValue;
-    userData = await authBloc.setSettings(model);
+    userData = await authBloc.setUserSettingsDoc(model);
     if (userData == true) {
       showMessage(true, "success", "user settings updated.");
+      loadAuthState();
     } else {
       showMessage(
           true, "error", "something went wrong, please contact your Admin.");
@@ -380,17 +375,6 @@ class SettingsState extends State<Settings> {
               Container(
                 margin: const EdgeInsets.only(top: 5.0),
               ),
-              const Text(
-                "upload profile photo",
-                style: cBodyText,
-              ),
-              Container(
-                margin: const EdgeInsets.only(top: 5.0),
-              ),
-              const Text(
-                "upload documents",
-                style: cBodyText,
-              ),
               CustomSpinner(toggleSpinner: spinnerVisible, key: null),
               CustomMessage(
                 toggleMessage: messageVisible,
@@ -398,6 +382,29 @@ class SettingsState extends State<Settings> {
                 toggleMessageTxt: messageTxt,
                 key: null,
               ),
+              (fileUpload == true) ? Column(
+                children: [
+                  ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => SavePage(docType: "docs", docId: model.uid)),
+                        );
+                      },
+                      child: const Text("upload documents")),
+                      Container(
+                margin: const EdgeInsets.only(top: 5.0),
+              ),
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => DisplayPage(docType: "docs", docId: model.uid)),
+                    );
+                  },
+                  child: const Text("display documents")),
+                ],
+              ) : const Text("save settings before document upload"),
               Container(
                 margin: const EdgeInsets.only(top: 15.0),
               ),
@@ -497,6 +504,181 @@ class SettingsState extends State<Settings> {
       builder: (BuildContext context) {
         return alert;
       },
+    );
+  }
+}
+
+class SavePage extends StatefulWidget {
+  final String docType;
+  final String docId;
+  const SavePage({super.key, required this.docType, required this.docId});
+  @override
+  _SavePageState createState() => _SavePageState();
+}
+
+class _SavePageState extends State<SavePage> {
+  PickedFile? pickedFile;
+  bool isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('upload documents'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 16),
+            GestureDetector(
+              child: pickedFile != null
+                  ? Container(
+                      width: 250,
+                      height: 250,
+                      decoration:
+                          BoxDecoration(border: Border.all(color: Colors.blue)),
+                      child: kIsWeb
+                          ? Image.network(pickedFile!.path)
+                          : Image.file(File(pickedFile!.path)))
+                  : Container(
+                      width: 250,
+                      height: 250,
+                      decoration:
+                          BoxDecoration(border: Border.all(color: Colors.blue)),
+                      child: const Center(
+                        child: Text('Click here to pick image from Gallery'),
+                      ),
+                    ),
+              onTap: () async {
+                // PickedFile? image =
+                // var image =
+                //      await ImagePicker().pickImage(source: ImageSource.gallery);
+                var image2 =
+                    await ImagePicker().pickImage(source: ImageSource.gallery);
+                PickedFile? image = PickedFile(image2!.path);
+                if (image != null) {
+                  setState(() {
+                    pickedFile = image;
+                  });
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            Container(
+                height: 50,
+                child: ElevatedButton(
+                  child: Text('Upload file'),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                  onPressed: isLoading || pickedFile == null
+                      ? null
+                      : () async {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          ParseFileBase? parseFile;
+
+                          if (kIsWeb) {
+                            //Flutter Web
+                            parseFile = ParseWebFile(
+                                await pickedFile!.readAsBytes(),
+                                name: 'image.jpg'); //Name for file is required
+                          } else {
+                            //Flutter Mobile/Desktop
+                            parseFile = ParseFile(File(pickedFile!.path));
+                          }
+                          await parseFile.save();
+
+                          //  final gallery = ParseObject('Gallery')
+                          //    ..set('file', parseFile);
+                          //  await gallery.save();
+                          final gallery = await authBloc.setUserFileDoc(
+                              widget.docType, widget.docId, parseFile);
+                          //  await gallery.save();
+                          if (gallery) {
+                            setState(() {
+                              isLoading = false;
+                              pickedFile = null;
+                            });
+                          }
+
+                          ScaffoldMessenger.of(context)
+                            ..removeCurrentSnackBar()
+                            ..showSnackBar(const SnackBar(
+                              content: Text(
+                                'Save file with success on Back4app',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              duration: Duration(seconds: 3),
+                              backgroundColor: Colors.blue,
+                            ));
+                        },
+                ))
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DisplayPage extends StatefulWidget {
+  final String docType;
+  final String docId;
+  const DisplayPage({super.key, required this.docType, required this.docId});
+  @override
+  _DisplayPageState createState() => _DisplayPageState();
+}
+
+class _DisplayPageState extends State<DisplayPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Display Gallery"),
+      ),
+      body: FutureBuilder<List>(
+          future: authBloc.getGalleryList(widget.docType, widget.docId),
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+              case ConnectionState.waiting:
+                return const Center(
+                  child: SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: CircularProgressIndicator()),
+                );
+              default:
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: Text("Error..."),
+                  );
+                } else {
+                  return ListView.builder(
+                      padding: const EdgeInsets.only(top: 8),
+                      itemCount: snapshot.data!.length,
+                      itemBuilder: (context, index) {
+                        //Web/Mobile/Desktop
+                        ParseFileBase? varFile =
+                            snapshot.data![index].get<ParseFileBase>('file');
+                        //Only iOS/Android/Desktop
+                        /*
+                         ParseFile? varFile =
+                             snapshot.data![index].get<ParseFile>('file');
+                         */
+                        return Image.network(
+                          varFile!.url!,
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.fitHeight,
+                        );
+                      });
+                }
+            }
+          }),
     );
   }
 }

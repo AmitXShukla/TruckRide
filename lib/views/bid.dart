@@ -405,7 +405,8 @@ class PlaceBidState extends State<PlaceBid> {
     setState(() => isUserValid = userState);
     // var userData;
     await authBloc
-        .getRideDoc("Rides", widget.docId)
+        .getRide(widget.docId)
+        // .getRideDoc("Rides", widget.docId)
         .then((value) => setState(() {
                   // model.objectId = userData[0]["objectId"];
                   model.rideId = value[0]["objectId"];

@@ -21,6 +21,7 @@ import '../views/message.dart';
 import '../views/ride.dart';
 import '../views/bids.dart';
 import '../views/bid.dart';
+import './admin/admin.dart';
 
 void main() async {
   // var analyzer = WebStartupAnalyzer(additionalFrameCount: 10);
@@ -101,7 +102,7 @@ class _AppState extends State<App> {
   }
 
   // Locale _locale = "en" as Locale;
-  Locale _locale = const Locale('es');
+  Locale _locale = const Locale('en');
 
   void setLocale(Locale value) {
     setState(() {
@@ -176,6 +177,7 @@ class _AppState extends State<App> {
         Ride.routeName: (context) => Ride(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
         Bids.routeName: (context) => Bids(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
         Bid.routeName: (context) => Bid(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
+        Admin.routeName: (context) => Admin(handleBrightnessChange: handleBrightnessChange, setLocale: setLocale),
       },
     );
   }

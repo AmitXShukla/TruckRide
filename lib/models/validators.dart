@@ -62,7 +62,7 @@ String? evalName(String value) {
 }
 
 String? evalChar(String value) {
-  if (value.length < 10) {
+  if (value.length < 5) {
     return "please enter min. 10 chars text";
   }
   return null;

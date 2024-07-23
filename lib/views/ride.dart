@@ -29,7 +29,7 @@ class RideState extends State<Ride> {
               objectId: '-',
               uid: '-',
               dttm: '-', from: '-', to: '-', message: '-', 
-              loadType: '-', status: 'new', fileURL: '-');
+              loadType: '-', status: 'new');
   InboxModel msgModel = InboxModel(dttm: '-', uid: '-', to: '-', message: '-', 
               readReceipt: false, fileURL: '-');
   final TextEditingController _dttmController = TextEditingController();
@@ -48,7 +48,6 @@ class RideState extends State<Ride> {
     final userState = await authBloc.isSignedIn();
     setState(() => isUserValid = userState);
     var username = await authBloc.getUser();
-    // storing user uid/objectId from users class, as a field into message record
     model.dttm = DateTime.now().toString();
     model.uid = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
     model.status = "new";
@@ -65,16 +64,10 @@ class RideState extends State<Ride> {
   }
 
   toggleSpinner() {
-    // TODO : refactor code
-    //make this as a global reusable widget
-    // define this in constants.dart
     setState(() => spinnerVisible = !spinnerVisible);
   }
 
   showMessage(bool msgVisible, msgType, message) {
-    // TODO : refactor code
-    //make this as a global reusable widget
-    // define this in constants.dart
     messageVisible = msgVisible;
     setState(() {
       messageType = msgType == "error"
@@ -88,10 +81,13 @@ class RideState extends State<Ride> {
     toggleSpinner();
     // ignore: prefer_typing_uninitialized_variables
     var userData;
-    userData = await authBloc.setRide("Rides", model);
+    userData = await authBloc.setRide(model);
     if (userData == true) {
       sendMessage("Your ride is booked, please wait for Drivers to accept your ride");
-      showMessage(true, "success", "Ride is booked, please keep checking your Inbox for further notifications.");
+      showMessage(true, "success", "Ride is booked, you can upload pictures now. please keep checking your Inbox for further notifications.");
+      setState(() {
+        _btnEnabled = !_btnEnabled;
+      });
     } else {
       showMessage(true, "error", "something went wrong, please contact your Admin.");
     }
@@ -134,7 +130,6 @@ class RideState extends State<Ride> {
         child: Center(
           child: Column(
             children: <Widget>[
-              // const Image(image: AssetImage('../assets/afronalalogo.png'), width: 200, height: 200,),
               SizedBox(
                 width: 300,
                 child: Row(
@@ -193,7 +188,6 @@ class RideState extends State<Ride> {
                   child: TextFormField(
                     controller: _fromController,
                     cursorColor: Colors.blueAccent,
-                    // keyboardType: TextInputType.emailAddress,
                     maxLength: 50,
                     obscureText: false,
                     onChanged: (value) => model.from = value,
@@ -285,7 +279,6 @@ class RideState extends State<Ride> {
               Container(
                 margin: const EdgeInsets.only(top: 5.0),
               ),
-              const Text("upload documents", style: cBodyText,),
               CustomSpinner(toggleSpinner: spinnerVisible, key: null),
               CustomMessage(
                   toggleMessage: messageVisible,

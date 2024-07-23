@@ -7,6 +7,10 @@ import '../models/validators.dart';
 import '../blocs/auth.bloc.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'package:image_picker/image_picker.dart';
+import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 // ignore: must_be_immutable
 class Rides extends StatefulWidget {
   static const routeName = '/rides';
@@ -20,13 +24,15 @@ class Rides extends StatefulWidget {
 }
 
 class RidesState extends State<Rides> {
-  List<ParseObject> results = <ParseObject>[];
+  // List<ParseObject> results = <ParseObject>[];
+  var results =[];
   // ignore: prefer_typing_uninitialized_variables
   bool isUserValid = true;
   bool spinnerVisible = false;
   bool messageVisible = false;
   String messageTxt = "";
   String messageType = "";
+  String srchTxt = "";
   InboxModel msgModel = InboxModel(
       dttm: '-',
       uid: '-',
@@ -49,7 +55,7 @@ class RidesState extends State<Rides> {
   void loadAuthState() async {
     final userState = await authBloc.isSignedIn();
     setState(() => isUserValid = userState);
-    getData();
+    getData(srchTxt);
   }
 
   toggleSpinner() {
@@ -66,20 +72,21 @@ class RidesState extends State<Rides> {
     });
   }
 
-  getData() async {
+  getData(String? srchTxt) async {
     toggleSpinner();
-    var res = await authBloc.getData("Rides", "-");
+    // var res = await authBloc.getData("Rides", "-");
+    var res = await authBloc.getRides(srchTxt);
     setState(() {
       results = res;
     });
     toggleSpinner();
   }
 
-  deleteData(docID) async {
-    await authBloc.delDoc("Rides", docID);
-    sendMessage("Your deleted one of your rides.");
-    getData();
-  }
+  // deleteData(docID) async {
+  //   await authBloc.delDoc("Rides", docID);
+  //   sendMessage("Your deleted one of your rides.");
+  //   getData(srchTxt);
+  // }
 
   void sendMessage(String msg) async {
     // var username = await authBloc.getUser();
@@ -151,6 +158,16 @@ class RidesState extends State<Rides> {
                       DataColumn(
                         label: Expanded(
                           child: Text(
+                            'RideID',
+                            style: TextStyle(
+                                fontStyle: FontStyle.italic,
+                                color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Expanded(
+                          child: Text(
                             'Date',
                             style: TextStyle(
                                 fontStyle: FontStyle.italic,
@@ -206,6 +223,15 @@ class RidesState extends State<Rides> {
                               Row(
                                 children: [
                                   Text(
+                                    res["dttm"].toString().substring(0, 2)+res["objectId"].toString().substring(0, 3),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            DataCell(
+                              Row(
+                                children: [
+                                  Text(
                                     res["dttm"].toString(),
                                   ),
                                 ],
@@ -229,18 +255,6 @@ class RidesState extends State<Rides> {
                             DataCell(
                               Row(
                                 children: [
-                                  // IconButton(
-                                  //   // iconSize: 20.0,
-                                  //   onPressed: () {
-                                  //     showAlertDialog1(context, res);
-                                  //   },
-                                  //   icon: const Icon(Icons.zoom_in,
-                                  //       color: Colors.blue),
-                                  //   tooltip: 'Details',
-                                  // ),
-                                  // const SizedBox(
-                                  //   width: 10,
-                                  // ),
                                   IconButton(
                                     icon: const Icon(Icons.fire_truck),
                                     color: Colors.brown,
@@ -268,6 +282,34 @@ class RidesState extends State<Rides> {
                                     tooltip: 'Edit',
                                     onPressed: () {
                                       showAlertDialogEdit(context, res);
+                                    },
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.upload_file),
+                                    color: Colors.orangeAccent,
+                                    tooltip: 'upload pics',
+                                    onPressed: () {
+                                                Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SavePage(docType: "ride", docId: res["objectId"])),
+          );
+                                    },
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.download),
+                                    color: Colors.orangeAccent,
+                                    tooltip: 'view pics',
+                                    onPressed: () {
+                                      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => DisplayPage(docType: "ride", docId: res["objectId"])),
+      );
                                     },
                                   ),
                                 ],
@@ -399,15 +441,6 @@ class RidesState extends State<Rides> {
                 Text(res['status'].toString()),
               ],
             ),
-            Row(
-              children: [
-                const Text(
-                  "Images : ",
-                  style: cNavText,
-                ),
-                Text(res['fileURL'].toString()),
-              ],
-            ),
           ],
         ),
       ),
@@ -458,8 +491,7 @@ class EditRideState extends State<EditRide> {
       to: '-',
       message: '-',
       loadType: '-',
-      status: 'new',
-      fileURL: '-');
+      status: 'new');
   InboxModel msgModel = InboxModel(
       dttm: '-',
       uid: '-',
@@ -488,7 +520,7 @@ class EditRideState extends State<EditRide> {
   setState(() => isUserValid = userState)
     });
 
-    final userData = await authBloc.getDoc("Rides", widget.docId);
+    final userData = await authBloc.getRide(widget.docId);
 
     if (userData.isNotEmpty) {
       setState(() {
@@ -501,7 +533,6 @@ class EditRideState extends State<EditRide> {
       model.message = userData[0]["message"];
       model.loadType = userData[0]["loadType"];
       model.status = userData[0]["status"];
-      model.fileURL = userData[0]["fileURL"];
 
       _dttmController.text = model.dttm;
       _fromController.text = model.from;
@@ -523,16 +554,10 @@ class EditRideState extends State<EditRide> {
   }
 
   toggleSpinner() {
-    // TODO : refactor code
-    //make this as a global reusable widget
-    // define this in constants.dart
     setState(() => spinnerVisible = !spinnerVisible);
   }
 
   showMessage(bool msgVisible, msgType, message) {
-    // TODO : refactor code
-    //make this as a global reusable widget
-    // define this in constants.dart
     messageVisible = msgVisible;
     setState(() {
       messageType = msgType == "error"
@@ -546,7 +571,7 @@ class EditRideState extends State<EditRide> {
     toggleSpinner();
     // ignore: prefer_typing_uninitialized_variables
     var userData;
-    userData = await authBloc.setRide("Rides", model);
+    userData = await authBloc.setRide(model);
     if (userData == true) {
       sendMessage("Your recently updated your ride");
       showMessage(true, "success",
@@ -936,8 +961,7 @@ class AcceptBidState extends State<AcceptBid> {
       to: '-',
       message: '-',
       loadType: '-',
-      status: 'new',
-      fileURL: '-');
+      status: 'new');
   BidModel bidModel = BidModel(
       objectId: '-',
       rideId: '-',
@@ -1001,7 +1025,6 @@ class AcceptBidState extends State<AcceptBid> {
                 rideModel.message = rideData[0]["message"];
                 rideModel.loadType = rideData[0]["loadType"];
                 rideModel.status = rideData[0]["status"];
-                rideModel.fileURL = rideData[0]["fileURL"];
               })
             }
         });
@@ -1013,16 +1036,10 @@ class AcceptBidState extends State<AcceptBid> {
   }
 
   toggleSpinner() {
-    // TODO : refactor code
-    //make this as a global reusable widget
-    // define this in constants.dart
     setState(() => spinnerVisible = !spinnerVisible);
   }
 
   showMessage(bool msgVisible, msgType, message) {
-    // TODO : refactor code
-    //make this as a global reusable widget
-    // define this in constants.dart
     messageVisible = msgVisible;
     setState(() {
       messageType = msgType == "error"
@@ -1036,7 +1053,7 @@ class AcceptBidState extends State<AcceptBid> {
     toggleSpinner();
     // ignore: prefer_typing_uninitialized_variables
     var userData;
-    userData = await authBloc.setRide("Rides", model);
+    userData = await authBloc.setRide(model);
     if (userData == true) {
       sendMessage("Your ride is confirmed.");
       showMessage(true, "success",
@@ -1318,6 +1335,181 @@ class AcceptBidState extends State<AcceptBid> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class SavePage extends StatefulWidget {
+  final String docType;
+  final String docId;
+  const SavePage({super.key, required this.docType, required this.docId});
+  @override
+  _SavePageState createState() => _SavePageState();
+}
+
+class _SavePageState extends State<SavePage> {
+  PickedFile? pickedFile;
+  bool isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('upload documents'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 16),
+            GestureDetector(
+              child: pickedFile != null
+                  ? Container(
+                      width: 250,
+                      height: 250,
+                      decoration:
+                          BoxDecoration(border: Border.all(color: Colors.blue)),
+                      child: kIsWeb
+                          ? Image.network(pickedFile!.path)
+                          : Image.file(File(pickedFile!.path)))
+                  : Container(
+                      width: 250,
+                      height: 250,
+                      decoration:
+                          BoxDecoration(border: Border.all(color: Colors.blue)),
+                      child: const Center(
+                        child: Text('Click here to pick image from Gallery'),
+                      ),
+                    ),
+              onTap: () async {
+                // PickedFile? image =
+                // var image =
+                //      await ImagePicker().pickImage(source: ImageSource.gallery);
+                var image2 =
+                    await ImagePicker().pickImage(source: ImageSource.gallery);
+                PickedFile? image = PickedFile(image2!.path);
+                if (image != null) {
+                  setState(() {
+                    pickedFile = image;
+                  });
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                  onPressed: isLoading || pickedFile == null
+                      ? null
+                      : () async {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          ParseFileBase? parseFile;
+
+                          if (kIsWeb) {
+                            //Flutter Web
+                            parseFile = ParseWebFile(
+                                await pickedFile!.readAsBytes(),
+                                name: 'image.jpg'); //Name for file is required
+                          } else {
+                            //Flutter Mobile/Desktop
+                            parseFile = ParseFile(File(pickedFile!.path));
+                          }
+                          await parseFile.save();
+
+                          //  final gallery = ParseObject('Gallery')
+                          //    ..set('file', parseFile);
+                          //  await gallery.save();
+                          final gallery = await authBloc.setUserFileDoc(
+                              widget.docType, widget.docId, parseFile);
+                          //  await gallery.save();
+                          if (gallery) {
+                            setState(() {
+                              isLoading = false;
+                              pickedFile = null;
+                            });
+                          }
+
+                          ScaffoldMessenger.of(context)
+                            ..removeCurrentSnackBar()
+                            ..showSnackBar(const SnackBar(
+                              content: Text(
+                                'Save file with success on Back4app',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              duration: Duration(seconds: 3),
+                              backgroundColor: Colors.blue,
+                            ));
+                        },
+                  child: const Text('Upload file'),
+                ))
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DisplayPage extends StatefulWidget {
+  final String docType;
+  final String docId;
+  const DisplayPage({super.key, required this.docType, required this.docId});
+  @override
+  _DisplayPageState createState() => _DisplayPageState();
+}
+
+class _DisplayPageState extends State<DisplayPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Display Gallery"),
+      ),
+      body: FutureBuilder<List>(
+          future: authBloc.getGalleryList(widget.docType, widget.docId),
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+              case ConnectionState.waiting:
+                return const Center(
+                  child: SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: CircularProgressIndicator()),
+                );
+              default:
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: Text("Error..."),
+                  );
+                } else {
+                  return ListView.builder(
+                      padding: const EdgeInsets.only(top: 8),
+                      itemCount: snapshot.data!.length,
+                      itemBuilder: (context, index) {
+                        //Web/Mobile/Desktop
+                        ParseFileBase? varFile =
+                            snapshot.data![index].get<ParseFileBase>('file');
+                        //Only iOS/Android/Desktop
+                        /*
+                         ParseFile? varFile =
+                             snapshot.data![index].get<ParseFile>('file');
+                         */
+                        return Image.network(
+                          varFile!.url!,
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.fitHeight,
+                        );
+                      });
+                }
+            }
+          }),
     );
   }
 }

@@ -185,7 +185,7 @@ class SignUpState extends State<SignUp> {
                     ),
                   )),
               Container(
-                margin: const EdgeInsets.only(top: 25.0),
+                margin: const EdgeInsets.only(top: 5.0),
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 10.0),
@@ -196,37 +196,37 @@ class SignUpState extends State<SignUp> {
                   toggleMessageType: messageType,
                   toggleMessageTxt: messageTxt, key: null,),
               Container(
-                margin: const EdgeInsets.only(top: 15.0),
+                margin: const EdgeInsets.only(top: 5.0),
               ),
               // signinSubmitBtn(context, authBloc),
               signinSubmitBtn(context),
-              Container(
-                margin: const EdgeInsets.only(top: 15.0),
-              ),
-              // Chip(
-              //     label: const Text("login with Google"),
-              //     avatar: ElevatedButton(
-              //       child: const Text(''),
-              //       // onPressed: () => fetchData(authBloc, "Google"),
-              //       onPressed: () => {},
-              //     )),
-              GestureDetector(
-                child: const Chip(
-                  backgroundColor: Colors.red,
-                  // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      topRight: Radius.circular(15),
-                      bottomRight: Radius.circular(15),
-                      topLeft: Radius.circular(15),
-                      bottomLeft: Radius.circular(15),
-                      )),
-                  label: Text("Sign In with Google"),
-                ),
-                onTap: () {
-                  setData("Google");
-                },
-              ),
+              // Container(
+              //   margin: const EdgeInsets.only(top: 15.0),
+              // ),
+              // // Chip(
+              // //     label: const Text("login with Google"),
+              // //     avatar: ElevatedButton(
+              // //       child: const Text(''),
+              // //       // onPressed: () => fetchData(authBloc, "Google"),
+              // //       onPressed: () => {},
+              // //     )),
+              // GestureDetector(
+              //   child: const Chip(
+              //     backgroundColor: Colors.red,
+              //     // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
+              //     shape: RoundedRectangleBorder(
+              //       borderRadius: BorderRadius.only(
+              //         topRight: Radius.circular(15),
+              //         bottomRight: Radius.circular(15),
+              //         topLeft: Radius.circular(15),
+              //         bottomLeft: Radius.circular(15),
+              //         )),
+              //     label: Text("Sign In with Google"),
+              //   ),
+              //   onTap: () {
+              //     setData("Google");
+              //   },
+              // ),
               Container(
                 margin: const EdgeInsets.only(top: 15.0),
               ),

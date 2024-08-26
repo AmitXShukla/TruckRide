@@ -7,8 +7,8 @@ WORKDIR /web
 COPY . /web
 # RUN npm -y -g install serve
 
-# ENV PORT 8080
-# EXPOSE 8080
+ENV PORT 8080
+EXPOSE 8080
 
 # Install the application dependencies
 # RUN npm install

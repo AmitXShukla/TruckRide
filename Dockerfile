@@ -5,7 +5,7 @@ FROM node:20
 WORKDIR /web
 
 COPY . /web
-# RUN npm -y -g install serve
+RUN npm -y -g install serve
 
 ENV PORT 8080
 EXPOSE 8080

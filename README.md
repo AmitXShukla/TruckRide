@@ -1,6 +1,8 @@
 # TruckRide
 Flutter Truck Ride Management app
 
+**work in progress** `do not download`
+
 ## Truck Load Ride App
 
 A free download to build a complete Truck/Services ride app.

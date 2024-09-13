@@ -13,8 +13,10 @@ var userType = "Customer";
 bool isBright = true;
 
 const cAppTitle = "afro nala";
+
 // ignore: camel_case_types
 enum cMessageType { error, success }
+
 const cBodyText = TextStyle(
   fontWeight: FontWeight.w400,
   color: Colors.blueGrey,
@@ -50,7 +52,8 @@ class CustomSpinner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: toggleSpinner ? const CircularProgressIndicator() : null);
+    return Center(
+        child: toggleSpinner ? const CircularProgressIndicator() : null);
   }
 }
 
@@ -131,185 +134,216 @@ enum ScreenSelected {
 }
 
 PreferredSizeWidget createNavLogInBar(BuildContext context, widget) {
-    return AppBar(
-      leading: IconButton(
-        // icon: const Icon(Icons.electric_rickshaw_outlined, color: Colors.greenAccent),
-        icon: const Image(image: AssetImage('../assets/afronalalogo.png')),
-        // onPressed: () { Scaffold.of(context).openDrawer(); },
-        onPressed: () { Navigator.pushNamed(
-                  context,
-                  '/',
-                );},
-        tooltip: "home",
+  return AppBar(
+    leading: IconButton(
+      // icon: const Icon(Icons.electric_rickshaw_outlined, color: Colors.greenAccent),
+      icon: const Image(image: AssetImage('../assets/afronalalogo.png')),
+      // onPressed: () { Scaffold.of(context).openDrawer(); },
+      onPressed: () {
+        Navigator.pushNamed(
+          context,
+          '/',
+        );
+      },
+      tooltip: "home",
+    ),
+    // title: const Text(cAppTitle, style: cBodyText,),
+    title: Text(
+      AppLocalizations.of(context)!.cAppTitle,
+      style: cBodyText,
+    ),
+    actions: <Widget>[
+      IconButton(
+        icon: const Icon(Icons.business, color: Colors.blueAccent),
+        tooltip: 'about us',
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Powered by elish consulting.')));
+        },
       ),
-      // title: const Text(cAppTitle, style: cBodyText,),
-      title: Text(AppLocalizations.of(context)!.cAppTitle, style: cBodyText,),
-      actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.power),
-            tooltip: 'about us',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Powered by elish consulting.')));
-            },
+      IconButton(
+        icon: const Icon(Icons.email_rounded, color: Colors.blueAccent),
+        tooltip: 'contact',
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(
+                  'MAKING EVERY DELIVERY A DELIGHT : info@elishconsulting.com')));
+        },
+      ),
+      IconButton(
+        icon: const Icon(Icons.dark_mode_outlined, color: Colors.blueAccent),
+        tooltip: 'toggle brightness',
+        onPressed: () {
+          isBright = !isBright;
+          widget.handleBrightnessChange(isBright);
+        },
+      ),
+      PopupMenuButton(
+        initialValue: 1,
+        tooltip: 'toggle language',
+        onSelected: (item) {
+          switch (item) {
+            // Your Enum Value which you have passed
+            case 1:
+              widget.setLocale(const Locale.fromSubtags(languageCode: 'en'));
+              break;
+            case 2:
+              widget.setLocale(const Locale.fromSubtags(languageCode: 'es'));
+              break;
+          }
+        },
+        itemBuilder: (BuildContext context) => <PopupMenuEntry>[
+          const PopupMenuItem(
+            value: 1,
+            child: Text('English'),
           ),
-          IconButton(
-            icon: const Icon(Icons.email_rounded),
-            tooltip: 'contact',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('MAKING EVERY DELIVERY A DELIGHT : info@elishconsulting.com')));
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.dark_mode_outlined),
-            tooltip: 'toggle brightness',
-            onPressed: () {
-              isBright = !isBright;
-              widget.handleBrightnessChange(isBright);
-            },
-          ),
-          PopupMenuButton(
-          initialValue: 1,
-          tooltip: 'toggle language',
-          onSelected: (item) {
-            switch (item) { // Your Enum Value which you have passed
-                case 1:
-                  widget.setLocale(const Locale.fromSubtags(languageCode: 'en'));
-                  break;
-                case 2:
-                  widget.setLocale(const Locale.fromSubtags(languageCode: 'es'));
-                  break;
-            }
-          },
-          itemBuilder: (BuildContext context) => <PopupMenuEntry>[
-            const PopupMenuItem(
-              value: 1,
-              child: Text('English'),
+          const PopupMenuItem(
+            value: 2,
+            child: Text(
+              'Spanish',
+              style: cNavText,
             ),
-            const PopupMenuItem(
-              value: 2,
-              child: Text('Spanish', style: cNavText,),
-            )
-          ],
-        ),
-          // IconButton(
-          //   icon: const Icon(Icons.language, color: Colors.green),
-          //   tooltip: 'language',
-          //   onPressed: () {
-          //     isBright = !isBright;
-          //     widget.handleBrightnessChange(isBright);
-          //   },
-          // ),
-        ],
-      );
-  }
-
-  PreferredSizeWidget createCustomerNavBar(BuildContext context, widget) { 
-    var data = authBloc.getMessages("Messages", "-");
-    data.then((value) => mailCount = value.length);
-    // var username = authBloc.getUserType();
-    var username = authBloc.getUserSettingsDoc();
-    username.then((value) => userType = (value.isEmpty) ? "Customer" : value["userType"]);
-    return AppBar(
-      leading: IconButton(
-        // icon: const Icon(Icons.electric_rickshaw_outlined, color: Colors.greenAccent),
-        // icon: const Icon(Icons.menu),
-        icon: const Image(image: AssetImage('../assets/afronalalogo.png')),
-        // onPressed: () { Scaffold.of(context).openDrawer(); },
-        onPressed: () { Navigator.pushNamed(
-                  context,
-                  '/settings',
-                );},
-        tooltip: "home",
-      ),
-      // title: const Text(cAppTitle, style: cBodyText,),
-      title: Text(AppLocalizations.of(context)!.cAppTitle, style: cBodyText,),
-      actions: <Widget>[
-        (userType == "Customer") ? 
-        IconButton(
-            icon: const Icon(Icons.fire_truck_sharp, color: Colors.brown,),
-            tooltip: 'Rides',
-            onPressed: () {
-              Navigator.pushReplacementNamed(
-                context,
-                '/rides',
-              );
-            },
           )
-          :
-          IconButton(
-            icon: const Icon(Icons.trolley, color: Colors.green,),
-            tooltip: 'Bids',
-            onPressed: () {
-              Navigator.pushReplacementNamed(
-                context,
-                '/bids',
-              );
-            },
-          ),
-          IconButton(
-            // icon: const Icon(Icons.email, color: Colors.blueAccent,),
-            icon: Badge(label: Text(mailCount.toString()), textColor: Colors.white, backgroundColor: Colors.red,
-            child: const Icon(Icons.email, color: Colors.blueAccent)),
-            tooltip: 'Inbox',
-            onPressed: () {
-              Navigator.pushReplacementNamed(
-                context,
-                '/inbox',
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.account_box, color: Colors.blueGrey,),
-            tooltip: 'settings',
-            onPressed: () {
-              Navigator.pushReplacementNamed(
-                context,
-                '/settings',
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.dark_mode_outlined, color: Colors.grey),
-            tooltip: 'toggle brightness',
-            onPressed: () {
-              isBright = !isBright;
-              widget.handleBrightnessChange(isBright);
-            },
-          ),
-          PopupMenuButton(
-          initialValue: 1,
-          tooltip: 'toggle language',
-          onSelected: (item) {
-            switch (item) { // Your Enum Value which you have passed
-                case 1:
-                  widget.setLocale(const Locale.fromSubtags(languageCode: 'en'));
-                  break;
-                case 2:
-                  widget.setLocale(const Locale.fromSubtags(languageCode: 'es'));
-                  break;
-            }
-          },
-          itemBuilder: (BuildContext context) => <PopupMenuEntry>[
-            const PopupMenuItem(
-              value: 1,
-              child: Text('English'),
-            ),
-            const PopupMenuItem(
-              value: 2,
-              child: Text('Spanish', style: cNavText,),
-            ),
-          ],
-        ),
-          // IconButton(
-          //   icon: const Icon(Icons.language, color: Colors.green),
-          //   tooltip: 'language',
-          //   onPressed: () {
-          //     isBright = !isBright;
-          //     widget.handleBrightnessChange(isBright);
-          //   },
-          // ),
         ],
-      );
-  }
+      ),
+      // IconButton(
+      //   icon: const Icon(Icons.language, color: Colors.green),
+      //   tooltip: 'language',
+      //   onPressed: () {
+      //     isBright = !isBright;
+      //     widget.handleBrightnessChange(isBright);
+      //   },
+      // ),
+    ],
+  );
+}
+
+PreferredSizeWidget createCustomerNavBar(BuildContext context, widget) {
+  var data = authBloc.getMessages("Messages", "-");
+  data.then((value) => mailCount = value.length);
+  // var username = authBloc.getUserType();
+  var username = authBloc.getUserSettingsDoc();
+  username.then(
+      (value) => userType = (value.isEmpty) ? "Customer" : value["userType"]);
+  return AppBar(
+    leading: IconButton(
+      // icon: const Icon(Icons.electric_rickshaw_outlined, color: Colors.greenAccent),
+      // icon: const Icon(Icons.menu),
+      icon: const Image(image: AssetImage('../assets/afronalalogo.png')),
+      // onPressed: () { Scaffold.of(context).openDrawer(); },
+      onPressed: () {
+        Navigator.pushNamed(
+          context,
+          '/settings',
+        );
+      },
+      tooltip: "home",
+    ),
+    // title: const Text(cAppTitle, style: cBodyText,),
+    title: Text(
+      AppLocalizations.of(context)!.cAppTitle,
+      style: cBodyText,
+    ),
+    actions: <Widget>[
+      (userType == "Customer")
+          ? IconButton(
+              icon: const Icon(
+                Icons.fire_truck_sharp,
+                color: Colors.blueAccent,
+              ),
+              tooltip: 'Rides',
+              onPressed: () {
+                Navigator.pushReplacementNamed(
+                  context,
+                  '/rides',
+                );
+              },
+            )
+          : IconButton(
+              icon: const Icon(
+                Icons.trolley,
+                color: Colors.blueAccent,
+              ),
+              tooltip: 'Bids',
+              onPressed: () {
+                Navigator.pushReplacementNamed(
+                  context,
+                  '/bids',
+                );
+              },
+            ),
+      IconButton(
+        // icon: const Icon(Icons.email, color: Colors.blueAccent,),
+        icon: Badge(
+            label: Text(mailCount.toString()),
+            textColor: Colors.white,
+            backgroundColor: Colors.red,
+            child: const Icon(Icons.email, color: Colors.blueAccent)),
+        tooltip: 'Inbox',
+        onPressed: () {
+          Navigator.pushReplacementNamed(
+            context,
+            '/inbox',
+          );
+        },
+      ),
+      IconButton(
+        icon: const Icon(
+          Icons.account_box,
+          color: Colors.blueAccent,
+        ),
+        tooltip: 'settings',
+        onPressed: () {
+          Navigator.pushReplacementNamed(
+            context,
+            '/settings',
+          );
+        },
+      ),
+      IconButton(
+        icon: const Icon(Icons.dark_mode_outlined, color: Colors.blueAccent),
+        tooltip: 'toggle brightness',
+        onPressed: () {
+          isBright = !isBright;
+          widget.handleBrightnessChange(isBright);
+        },
+      ),
+      PopupMenuButton(
+        initialValue: 1,
+        tooltip: 'toggle language',
+        onSelected: (item) {
+          switch (item) {
+            // Your Enum Value which you have passed
+            case 1:
+              widget.setLocale(const Locale.fromSubtags(languageCode: 'en'));
+              break;
+            case 2:
+              widget.setLocale(const Locale.fromSubtags(languageCode: 'es'));
+              break;
+          }
+        },
+        itemBuilder: (BuildContext context) => <PopupMenuEntry>[
+          const PopupMenuItem(
+            value: 1,
+            child: Text('English'),
+          ),
+          const PopupMenuItem(
+            value: 2,
+            child: Text(
+              'Spanish',
+              style: cNavText,
+            ),
+          ),
+        ],
+      ),
+      // IconButton(
+      //   icon: const Icon(Icons.language, color: Colors.green),
+      //   tooltip: 'language',
+      //   onPressed: () {
+      //     isBright = !isBright;
+      //     widget.handleBrightnessChange(isBright);
+      //   },
+      // ),
+    ],
+  );
+}

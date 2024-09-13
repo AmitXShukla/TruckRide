@@ -147,7 +147,7 @@ class AdminState extends State<Admin> {
                       onPressed: () {
                         getUserListADMIN(srchUserName);
                       },
-                      child: Icon(Icons.search, color: Colors.blueAccent),
+                      child: const Icon(Icons.search, color: Colors.blueAccent),
                     ),
                     const SizedBox(
                       width: 10,
@@ -287,8 +287,7 @@ class AdminState extends State<Admin> {
                                     width: 10,
                                   ),
                                   IconButton(
-                                    icon: const Icon(
-                                        Icons.fire_truck),
+                                    icon: const Icon(Icons.fire_truck),
                                     color: Colors.brown,
                                     tooltip: 'Bids',
                                     // onPressed: () {
@@ -499,7 +498,7 @@ class EditBidState extends State<EditBid> {
     var username = await authBloc.getUser();
     final userState = await authBloc.isSignedIn();
     setState(() => isUserValid = userState);
-    final userData = await authBloc.getBidDoc("Bids", widget.docId);
+    final userData = await authBloc.getBidDoc(widget.docId);
 
     if (userData.isNotEmpty) {
       setState(() {
@@ -554,7 +553,7 @@ class EditBidState extends State<EditBid> {
     toggleSpinner();
     // ignore: prefer_typing_uninitialized_variables
     var userData;
-    userData = await authBloc.setBid("Bids", model);
+    userData = await authBloc.setBid(model);
     if (userData == true) {
       sendMessage(model.uid,
           "There is a bid update your ride, please check your rides.");
@@ -1344,8 +1343,10 @@ class EditUserSettingstate extends State<EditUserSettings> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        SavePage(docType: "docs", docId: model.uid, uid: model.uid)),
+                                    builder: (context) => SavePage(
+                                        docType: "docs",
+                                        docId: model.uid,
+                                        uid: model.uid)),
                               );
                             },
                             child: const Text("upload documents")),
@@ -1357,8 +1358,10 @@ class EditUserSettingstate extends State<EditUserSettings> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        DisplayPage(docType: "docs", docId: model.uid, uid: model.uid)),
+                                    builder: (context) => DisplayPage(
+                                        docType: "docs",
+                                        docId: model.uid,
+                                        uid: model.uid)),
                               );
                             },
                             child: const Text("display documents")),
@@ -2050,7 +2053,7 @@ class AcceptBidState extends State<AcceptBid> {
     toggleSpinner();
     // ignore: prefer_typing_uninitialized_variables
     var userData;
-    userData = await authBloc.setBid("Bide", model);
+    userData = await authBloc.setBid(model);
     if (userData == true) {
       sendMessage("Your Bid is accepted.");
       showMessage(true, "success",
@@ -2480,7 +2483,10 @@ class showUserRidesState extends State<showUserRides> {
                               Row(
                                 children: [
                                   Text(
-                                    res["dttm"].toString().substring(0, 2)+res["objectId"].toString().substring(0, 3),
+                                    res["dttm"].toString().substring(0, 2) +
+                                        res["objectId"]
+                                            .toString()
+                                            .substring(0, 3),
                                   ),
                                 ],
                               ),
@@ -2549,10 +2555,14 @@ class showUserRidesState extends State<showUserRides> {
                                     color: Colors.orangeAccent,
                                     tooltip: 'upload pics',
                                     onPressed: () {
-                                                Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => SavePage(docType: "ride", docId: res["objectId"], uid: res["uid"])),
-          );
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => SavePage(
+                                                docType: "ride",
+                                                docId: res["objectId"],
+                                                uid: res["uid"])),
+                                      );
                                     },
                                   ),
                                   const SizedBox(
@@ -2564,9 +2574,13 @@ class showUserRidesState extends State<showUserRides> {
                                     tooltip: 'view pics',
                                     onPressed: () {
                                       Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => DisplayPage(docType: "ride", docId: res["objectId"], uid: res["uid"])),
-      );
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => DisplayPage(
+                                                docType: "ride",
+                                                docId: res["objectId"],
+                                                uid: res["uid"])),
+                                      );
                                     },
                                   ),
                                 ],
@@ -2724,7 +2738,11 @@ class SavePage extends StatefulWidget {
   final String uid;
   final String docId;
   final String docType;
-  const SavePage({super.key,  required this.docType, required this.docId, required this.uid});
+  const SavePage(
+      {super.key,
+      required this.docType,
+      required this.docId,
+      required this.uid});
   @override
   _SavePageState createState() => _SavePageState();
 }
@@ -2807,7 +2825,10 @@ class _SavePageState extends State<SavePage> {
                           //    ..set('file', parseFile);
                           //  await gallery.save();
                           final gallery = await authBloc.setUserFileDocADMIN(
-                              widget.docType, widget.docId, widget.uid, parseFile);
+                              widget.docType,
+                              widget.docId,
+                              widget.uid,
+                              parseFile);
                           //  await gallery.save();
                           if (gallery) {
                             setState(() {
@@ -2841,7 +2862,11 @@ class DisplayPage extends StatefulWidget {
   final String uid;
   final String docId;
   final String docType;
-  const DisplayPage({super.key,  required this.docType, required this.docId, required this.uid});
+  const DisplayPage(
+      {super.key,
+      required this.docType,
+      required this.docId,
+      required this.uid});
   @override
   _DisplayPageState createState() => _DisplayPageState();
 }
@@ -2854,7 +2879,8 @@ class _DisplayPageState extends State<DisplayPage> {
         title: const Text("Display Gallery"),
       ),
       body: FutureBuilder<List>(
-          future: authBloc.getGalleryListADMIN(widget.docType, widget.docId, widget.uid),
+          future: authBloc.getGalleryListADMIN(
+              widget.docType, widget.docId, widget.uid),
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.none:

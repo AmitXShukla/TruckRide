@@ -10,8 +10,10 @@ import 'package:flutter/cupertino.dart';
 // ignore: must_be_immutable
 class Bid extends StatefulWidget {
   static const routeName = '/bid';
-  Bid({super.key, required this.handleBrightnessChange
-      , required this.setLocale});
+  Bid(
+      {super.key,
+      required this.handleBrightnessChange,
+      required this.setLocale});
 
   Function(bool useLightMode) handleBrightnessChange;
   Function(Locale _locale) setLocale;
@@ -20,13 +22,15 @@ class Bid extends StatefulWidget {
 }
 
 class BidState extends State<Bid> {
-  List<ParseObject> results = <ParseObject>[];
+  // List<ParseObject> results = <ParseObject>[];
+  var results = [];
   // ignore: prefer_typing_uninitialized_variables
   bool isUserValid = true;
   bool spinnerVisible = false;
   bool messageVisible = false;
   String messageTxt = "";
   String messageType = "";
+  String srchTxt = "";
 
   @override
   void initState() {
@@ -42,7 +46,7 @@ class BidState extends State<Bid> {
   void loadAuthState() async {
     final userState = await authBloc.isSignedIn();
     setState(() => isUserValid = userState);
-    getData();
+    getData(srchTxt);
   }
 
   toggleSpinner() {
@@ -59,11 +63,12 @@ class BidState extends State<Bid> {
     });
   }
 
-  getData() async {
+  getData(String? srchTxt) async {
     toggleSpinner();
-    await authBloc.getBiddableRides("Rides").then((res) => setState(() {
+    var res = await authBloc.getBiddableRides(srchTxt);
+    setState(() {
       results = res;
-    }));
+    });
     toggleSpinner();
   }
 
@@ -97,7 +102,7 @@ class BidState extends State<Bid> {
                     );
                   },
                   child: const Chip(
-                      backgroundColor: Colors.green,
+                      backgroundColor: Colors.blueAccent,
                       // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.only(
@@ -109,7 +114,7 @@ class BidState extends State<Bid> {
                       label: Text("Back")),
                 ),
                 const Text(
-                  "new rides",
+                  "rides available for new bids",
                   style: cSuccessText,
                 ),
                 SingleChildScrollView(
@@ -385,10 +390,14 @@ class PlaceBidState extends State<PlaceBid> {
       status: 'new',
       fileURL: '-',
       bid: '-',
-      message: '-'
-      );
-  InboxModel msgModel = InboxModel(dttm: '-', uid: '-', to: '-', message: '-', 
-              readReceipt: false, fileURL: '-');
+      message: '-');
+  InboxModel msgModel = InboxModel(
+      dttm: '-',
+      uid: '-',
+      to: '-',
+      message: '-',
+      readReceipt: false,
+      fileURL: '-');
   final TextEditingController _bidController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
 
@@ -409,6 +418,7 @@ class PlaceBidState extends State<PlaceBid> {
         // .getRideDoc("Rides", widget.docId)
         .then((value) => setState(() {
                   // model.objectId = userData[0]["objectId"];
+                  // print(value);
                   model.rideId = value[0]["objectId"];
                   model.rideDttm = value[0]["dttm"];
                   model.uid = value[0]["uid"];
@@ -421,7 +431,6 @@ class PlaceBidState extends State<PlaceBid> {
                   model.fileURL = value[0]["fileURL"];
                   model.bid = "";
                   model.message = '-';
-
                   _bidController.text = model.bid;
                   _messageController.text = model.message;
                 })
@@ -460,9 +469,10 @@ class PlaceBidState extends State<PlaceBid> {
     toggleSpinner();
     // ignore: prefer_typing_uninitialized_variables
     var userData;
-    userData = await authBloc.setBid("Bids", model);
+    userData = await authBloc.setBid(model);
     if (userData == true) {
-      sendMessage(model.uid, "There is a bid update your ride, please check your rides.");
+      sendMessage(model.uid,
+          "There is a bid update your ride, please check your rides.");
       sendMessage(model.driver, "You recently updated a bid on one ride.");
       showMessage(true, "success",
           "Bid is placed, please keep checking your Inbox for further notifications.");
@@ -532,13 +542,14 @@ class PlaceBidState extends State<PlaceBid> {
                       width: 5,
                     ),
                     ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/bid',
-                          );
-                        },
-                        child: const Text('back')),
+                      onPressed: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/bid',
+                        );
+                      },
+                      child: const Icon(Icons.close, color: Colors.blueAccent),
+                    ),
                   ],
                 ),
               ),

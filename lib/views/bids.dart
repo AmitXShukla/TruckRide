@@ -10,8 +10,10 @@ import 'package:flutter/cupertino.dart';
 // ignore: must_be_immutable
 class Bids extends StatefulWidget {
   static const routeName = '/bids';
-  Bids({super.key, required this.handleBrightnessChange
-  , required this.setLocale});
+  Bids(
+      {super.key,
+      required this.handleBrightnessChange,
+      required this.setLocale});
 
   Function(bool useLightMode) handleBrightnessChange;
   Function(Locale _locale) setLocale;
@@ -20,13 +22,15 @@ class Bids extends StatefulWidget {
 }
 
 class BidsState extends State<Bids> {
-  List<ParseObject> results = <ParseObject>[];
+  // List<ParseObject> results = <ParseObject>[];
+  var results = [];
   // ignore: prefer_typing_uninitialized_variables
   bool isUserValid = true;
   bool spinnerVisible = false;
   bool messageVisible = false;
   String messageTxt = "";
   String messageType = "";
+  String srchTxt = "";
 
   @override
   void initState() {
@@ -42,7 +46,7 @@ class BidsState extends State<Bids> {
   void loadAuthState() async {
     final userState = await authBloc.isSignedIn();
     setState(() => isUserValid = userState);
-    getData();
+    getData(srchTxt);
   }
 
   toggleSpinner() {
@@ -59,9 +63,19 @@ class BidsState extends State<Bids> {
     });
   }
 
-  getData() async {
+  // getData() async {
+  //   toggleSpinner();
+  //   var res = await authBloc.getBids("Bids", "driver");
+  //   setState(() {
+  //     results = res;
+  //   });
+  //   toggleSpinner();
+  // }
+  getData(String? srchTxt) async {
     toggleSpinner();
-    var res = await authBloc.getBids("Bids", "driver");
+    // var res = await authBloc.getData("Rides", "-");
+    var res = await authBloc.getBids(srchTxt);
+    // print(res);
     setState(() {
       results = res;
     });
@@ -95,25 +109,77 @@ class BidsState extends State<Bids> {
           sliver: SliverList(
             delegate: SliverChildListDelegate(
               <Widget>[
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/bid',
-                    );
-                  },
-                  child: const Chip(
-                      backgroundColor: Colors.green,
-                      // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(15),
-                        bottomRight: Radius.circular(15),
-                        topLeft: Radius.circular(15),
-                        bottomLeft: Radius.circular(15),
-                      )),
-                      label: Text("place a new bid")),
+                Row(
+                  children: [
+                    Container(
+                        width: 300.0,
+                        margin: const EdgeInsets.only(top: 25.0),
+                        child: TextFormField(
+                          cursorColor: Colors.blueAccent,
+                          keyboardType: TextInputType.emailAddress,
+                          maxLength: 50,
+                          obscureText: false,
+                          onChanged: (value) => srchTxt = value,
+                          validator: (value) {
+                            return Validators().evalChar(value!);
+                          },
+                          // onSaved: (value) => _email = value,
+                          decoration: InputDecoration(
+                            // icon: const Icon(Icons.email),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.0)),
+                            hintText: 'bids',
+                            labelText: 'search past bids',
+                            // errorText: snapshot.error,
+                          ),
+                        )),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        getData(srchTxt);
+                      },
+                      child: const Icon(Icons.search, color: Colors.blueAccent),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Navigator.push(
+                        //   context,
+                        //   CupertinoPageRoute(
+                        //       builder: (context) => const AddUser()),
+                        // );
+                        Navigator.pushNamed(
+                          context,
+                          '/bid',
+                        );
+                      },
+                      child: const Icon(Icons.add, color: Colors.blueAccent),
+                    ),
+                  ],
                 ),
+                // GestureDetector(
+                //   onTap: () {
+                //     Navigator.pushNamed(
+                //       context,
+                //       '/bid',
+                //     );
+                //   },
+                //   child: const Chip(
+                //       backgroundColor: Colors.green,
+                //       // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
+                //       shape: RoundedRectangleBorder(
+                //           borderRadius: BorderRadius.only(
+                //         topRight: Radius.circular(15),
+                //         bottomRight: Radius.circular(15),
+                //         topLeft: Radius.circular(15),
+                //         bottomLeft: Radius.circular(15),
+                //       )),
+                //       label: Text("place a new bid")),
+                // ),
                 const Text(
                   "recent bids",
                   style: cSuccessText,
@@ -215,7 +281,11 @@ class BidsState extends State<Bids> {
                                   // ),
                                   IconButton(
                                     icon: const Icon(Icons.trolley),
-                                    color: Colors.green,
+                                    color: res["status"] == "new"
+                                        ? Colors.green
+                                        : (res["status"] == "active"
+                                            ? Colors.orange
+                                            : Colors.grey),
                                     tooltip: 'Bids',
                                     onPressed: () {
                                       showAlertDialog1(context, res);
@@ -427,10 +497,14 @@ class EditBidState extends State<EditBid> {
       status: 'new',
       fileURL: '-',
       bid: '-',
-      message: '-'
-      );
-  InboxModel msgModel = InboxModel(dttm: '-', uid: '-', to: '-', message: '-', 
-              readReceipt: false, fileURL: '-');
+      message: '-');
+  InboxModel msgModel = InboxModel(
+      dttm: '-',
+      uid: '-',
+      to: '-',
+      message: '-',
+      readReceipt: false,
+      fileURL: '-');
   final TextEditingController _bidController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
 
@@ -445,24 +519,26 @@ class EditBidState extends State<EditBid> {
     var username = await authBloc.getUser();
     final userState = await authBloc.isSignedIn();
     setState(() => isUserValid = userState);
-    final userData = await authBloc.getBidDoc("Bids", widget.docId);
+    final userData = await authBloc.getBidDoc(widget.docId);
 
     if (userData.isNotEmpty) {
       setState(() {
-      model.objectId = userData[0]["objectId"];
-      model.rideId = userData[0]["objectId"];
-      model.rideDttm = userData[0]["rideDttm"];
-      model.uid = userData[0]["uid"];
-      model.driver = (username?.get("objectId") ==  null) ? "-" : username?.get("objectId");
-      model.from = userData[0]["from"];
-      model.to = userData[0]["to"];
-      model.status = "new";
-      model.fileURL = userData[0]["fileURL"];
-      model.bid = userData[0]["bid"];
-      model.message = userData[0]["message"];
+        model.objectId = userData[0]["objectId"];
+        model.rideId = userData[0]["rideId"];
+        model.rideDttm = userData[0]["rideDttm"];
+        model.uid = userData[0]["uid"];
+        model.driver = (username?.get("objectId") == null)
+            ? "-"
+            : username?.get("objectId");
+        model.from = userData[0]["from"];
+        model.to = userData[0]["to"];
+        model.status = "new";
+        model.fileURL = userData[0]["fileURL"];
+        model.bid = userData[0]["bid"];
+        model.message = userData[0]["message"];
 
-      _bidController.text = model.bid;
-      _messageController.text = model.message;  
+        _bidController.text = model.bid;
+        _messageController.text = model.message;
       });
     }
   }
@@ -498,9 +574,10 @@ class EditBidState extends State<EditBid> {
     toggleSpinner();
     // ignore: prefer_typing_uninitialized_variables
     var userData;
-    userData = await authBloc.setBid("Bids", model);
+    userData = await authBloc.setBid(model);
     if (userData == true) {
-      sendMessage(model.uid, "There is a bid update your ride, please check your rides.");
+      sendMessage(model.uid,
+          "There is a bid update your ride, please check your rides.");
       sendMessage(model.driver, "You recently updated a bid on one ride.");
       showMessage(true, "success",
           "Bid is placed, please keep checking your Inbox for further notifications.");

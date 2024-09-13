@@ -11,11 +11,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:parse_server_sdk_flutter/parse_server_sdk_flutter.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+
 // ignore: must_be_immutable
 class Rides extends StatefulWidget {
   static const routeName = '/rides';
-  Rides({super.key, required this.handleBrightnessChange
-  , required this.setLocale});
+  Rides(
+      {super.key,
+      required this.handleBrightnessChange,
+      required this.setLocale});
 
   Function(bool useLightMode) handleBrightnessChange;
   Function(Locale _locale) setLocale;
@@ -25,7 +28,7 @@ class Rides extends StatefulWidget {
 
 class RidesState extends State<Rides> {
   // List<ParseObject> results = <ParseObject>[];
-  var results =[];
+  var results = [];
   // ignore: prefer_typing_uninitialized_variables
   bool isUserValid = true;
   bool spinnerVisible = false;
@@ -94,9 +97,10 @@ class RidesState extends State<Rides> {
     // msgModel.uid =
     //     (username?.get("objectId") == null) ? "-" : username?.get("objectId");
     await authBloc.getUser().then((username) => {
-      msgModel.uid =
-        (username?.get("objectId") == null) ? "-" : username?.get("objectId")
-    });
+          msgModel.uid = (username?.get("objectId") == null)
+              ? "-"
+              : username?.get("objectId")
+        });
     // storing user uid/objectId from users class, as a field into message record
     msgModel.dttm = DateTime.now().toString();
     msgModel.to = "-";
@@ -128,24 +132,76 @@ class RidesState extends State<Rides> {
           sliver: SliverList(
             delegate: SliverChildListDelegate(
               <Widget>[
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/ride',
-                    );
-                  },
-                  child: const Chip(
-                      backgroundColor: Colors.brown,
-                      // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.only(
-                        topRight: Radius.circular(15),
-                        bottomRight: Radius.circular(15),
-                        topLeft: Radius.circular(15),
-                        bottomLeft: Radius.circular(15),
-                      )),
-                      label: Text("Request a new ride")),
+                // GestureDetector(
+                //   onTap: () {
+                //     Navigator.pushNamed(
+                //       context,
+                //       '/ride',
+                //     );
+                //   },
+                //   child: const Chip(
+                //       backgroundColor: Colors.brown,
+                //       // padding: EdgeInsets.symmetric(vertical: 15, horizontal: 5),
+                //       shape: RoundedRectangleBorder(
+                //           borderRadius: BorderRadius.only(
+                //         topRight: Radius.circular(15),
+                //         bottomRight: Radius.circular(15),
+                //         topLeft: Radius.circular(15),
+                //         bottomLeft: Radius.circular(15),
+                //       )),
+                //       label: Text("Request a new ride")),
+                // ),
+                Row(
+                  children: [
+                    Container(
+                        width: 300.0,
+                        margin: const EdgeInsets.only(top: 25.0),
+                        child: TextFormField(
+                          cursorColor: Colors.blueAccent,
+                          keyboardType: TextInputType.emailAddress,
+                          maxLength: 50,
+                          obscureText: false,
+                          onChanged: (value) => srchTxt = value,
+                          validator: (value) {
+                            return Validators().evalChar(value!);
+                          },
+                          // onSaved: (value) => _email = value,
+                          decoration: InputDecoration(
+                            // icon: const Icon(Icons.email),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.0)),
+                            hintText: 'From Location',
+                            labelText: 'search text',
+                            // errorText: snapshot.error,
+                          ),
+                        )),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        getData(srchTxt);
+                      },
+                      child: const Icon(Icons.search, color: Colors.blueAccent),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Navigator.push(
+                        //   context,
+                        //   CupertinoPageRoute(
+                        //       builder: (context) => const AddUser()),
+                        // );
+                        Navigator.pushNamed(
+                          context,
+                          '/ride',
+                        );
+                      },
+                      child: const Icon(Icons.add, color: Colors.blueAccent),
+                    ),
+                  ],
                 ),
                 const Text(
                   "recent rides",
@@ -223,7 +279,10 @@ class RidesState extends State<Rides> {
                               Row(
                                 children: [
                                   Text(
-                                    res["dttm"].toString().substring(0, 2)+res["objectId"].toString().substring(0, 3),
+                                    res["dttm"].toString().substring(0, 2) +
+                                        res["objectId"]
+                                            .toString()
+                                            .substring(0, 3),
                                   ),
                                 ],
                               ),
@@ -257,16 +316,21 @@ class RidesState extends State<Rides> {
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.fire_truck),
-                                    color: Colors.brown,
+                                    color: res["status"] == "new"
+                                        ? Colors.green
+                                        : (res["status"] == "active"
+                                            ? Colors.orange
+                                            : Colors.grey),
+                                    // color: Colors.brown,
                                     tooltip: 'Bids',
                                     // onPressed: () {
                                     //   // showAlertDialogBids(context);
                                     // },
                                     onPressed: () {
-                                      Navigator.pop(context);
+                                      // Navigator.pop(context);
                                       Navigator.push(
                                         context,
-                                        CupertinoPageRoute(
+                                        MaterialPageRoute(
                                             builder: (context) => AcceptBid(
                                                   docId: res["objectId"],
                                                 )),
@@ -277,9 +341,23 @@ class RidesState extends State<Rides> {
                                     width: 10,
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.edit),
-                                    color: Colors.orangeAccent,
-                                    tooltip: 'Edit',
+                                    // icon: const Icon(Icons.edit),
+                                    icon: res["status"] == "new"
+                                        ? const Icon(Icons.edit)
+                                        : (res["status"] == "active")
+                                            ? const Icon(Icons.zoom_in)
+                                            : const Icon(Icons.zoom_out),
+                                    // color: Colors.orangeAccent,
+                                    color: res["status"] == "new"
+                                        ? Colors.green
+                                        : (res["status"] == "active"
+                                            ? Colors.orange
+                                            : Colors.grey),
+                                    tooltip: res["status"] == "new"
+                                        ? "edit"
+                                        : (res["status"] == "active")
+                                            ? "active"
+                                            : "view",
                                     onPressed: () {
                                       showAlertDialogEdit(context, res);
                                     },
@@ -289,13 +367,16 @@ class RidesState extends State<Rides> {
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.upload_file),
-                                    color: Colors.orangeAccent,
+                                    color: Colors.greenAccent,
                                     tooltip: 'upload pics',
                                     onPressed: () {
-                                                Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => SavePage(docType: "ride", docId: res["objectId"])),
-          );
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => SavePage(
+                                                docType: "ride",
+                                                docId: res["objectId"])),
+                                      );
                                     },
                                   ),
                                   const SizedBox(
@@ -303,13 +384,16 @@ class RidesState extends State<Rides> {
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.download),
-                                    color: Colors.orangeAccent,
+                                    color: Colors.greenAccent,
                                     tooltip: 'view pics',
                                     onPressed: () {
                                       Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => DisplayPage(docType: "ride", docId: res["objectId"])),
-      );
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => DisplayPage(
+                                                docType: "ride",
+                                                docId: res["objectId"])),
+                                      );
                                     },
                                   ),
                                 ],
@@ -516,29 +600,30 @@ class EditRideState extends State<EditRide> {
     var username = await authBloc.getUser();
     // final userState = await authBloc.isSignedIn();
     // setState(() => isUserValid = userState);
-    await authBloc.isSignedIn().then((userState) => {
-  setState(() => isUserValid = userState)
-    });
+    await authBloc
+        .isSignedIn()
+        .then((userState) => {setState(() => isUserValid = userState)});
 
     final userData = await authBloc.getRide(widget.docId);
 
     if (userData.isNotEmpty) {
       setState(() {
-      model.objectId = userData[0]["objectId"];
-      model.uid =
-          (username?.get("objectId") == null) ? "-" : username?.get("objectId");
-      model.dttm = userData[0]["dttm"];
-      model.from = userData[0]["from"];
-      model.to = userData[0]["to"];
-      model.message = userData[0]["message"];
-      model.loadType = userData[0]["loadType"];
-      model.status = userData[0]["status"];
+        model.objectId = userData[0]["objectId"];
+        model.uid = (username?.get("objectId") == null)
+            ? "-"
+            : username?.get("objectId");
+        model.dttm = userData[0]["dttm"];
+        model.from = userData[0]["from"];
+        model.to = userData[0]["to"];
+        model.message = userData[0]["message"];
+        model.loadType = userData[0]["loadType"];
+        model.status = userData[0]["status"];
 
-      _dttmController.text = model.dttm;
-      _fromController.text = model.from;
-      _toController.text = model.to;
-      _loadTypeController.text = model.loadType;
-      _messageController.text = model.message;  
+        _dttmController.text = model.dttm;
+        _fromController.text = model.from;
+        _toController.text = model.to;
+        _loadTypeController.text = model.loadType;
+        _messageController.text = model.message;
       });
     }
   }
@@ -945,94 +1030,31 @@ class AcceptBid extends StatefulWidget {
 }
 
 class AcceptBidState extends State<AcceptBid> {
+  // List<ParseObject> results = <ParseObject>[];
+  var results = [];
+  // ignore: prefer_typing_uninitialized_variables
   bool isUserValid = true;
   bool spinnerVisible = false;
   bool messageVisible = false;
-  bool _btnEnabled = false;
-  bool _completeEnabled = false;
   String messageTxt = "";
   String messageType = "";
-  final _formKey = GlobalKey<FormState>();
-  RideModel rideModel = RideModel(
-      objectId: '-',
-      uid: '-',
-      dttm: '-',
-      from: '-',
-      to: '-',
-      message: '-',
-      loadType: '-',
-      status: 'new');
-  BidModel bidModel = BidModel(
-      objectId: '-',
-      rideId: '-',
-      rideDttm: '-',
-      uid: '-',
-      driver: '-',
-      from: '-',
-      to: '-',
-      status: 'new',
-      fileURL: '-',
-      bid: '-',
-      message: '-');
-  InboxModel msgModel = InboxModel(
-      dttm: '-',
-      uid: '-',
-      to: '-',
-      message: '-',
-      readReceipt: false,
-      fileURL: '-');
+  String srchTxt = "";
 
   @override
   void initState() {
-    loadAuthState();
     super.initState();
-  }
-
-  void loadAuthState() async {
-    // storing user uid/objectId from users class, as a field into message record
-    var username = await authBloc.getUser();
-    // final userState = await authBloc.isSignedIn();
-    // setState(() => isUserValid = userState);
-    await authBloc.isSignedIn().then((userState) => {
-      setState(() => isUserValid = userState)
-    });
-    // final rideData = await authBloc.getDoc("Rides", widget.docId);
-
-    // if (rideData.isNotEmpty) {
-    //   setState(() {
-    //     rideModel.objectId = rideData[0]["objectId"];
-    //   rideModel.uid =
-    //       (username?.get("objectId") == null) ? "-" : username?.get("objectId");
-    //   rideModel.dttm = rideData[0]["dttm"];
-    //   rideModel.from = rideData[0]["from"];
-    //   rideModel.to = rideData[0]["to"];
-    //   rideModel.message = rideData[0]["message"];
-    //   rideModel.loadType = rideData[0]["loadType"];
-    //   rideModel.status = rideData[0]["status"];
-    //   rideModel.fileURL = rideData[0]["fileURL"];
-    //   });
-    await authBloc.getDoc("Rides", widget.docId).then((rideData) => {
-          if (rideData.isNotEmpty)
-            {
-              setState(() {
-                rideModel.objectId = rideData[0]["objectId"];
-                rideModel.uid = (username?.get("objectId") == null)
-                    ? "-"
-                    : username?.get("objectId");
-                rideModel.dttm = rideData[0]["dttm"];
-                rideModel.from = rideData[0]["from"];
-                rideModel.to = rideData[0]["to"];
-                rideModel.message = rideData[0]["message"];
-                rideModel.loadType = rideData[0]["loadType"];
-                rideModel.status = rideData[0]["status"];
-              })
-            }
-        });
+    loadAuthState();
   }
 
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void loadAuthState() async {
+    final userState = await authBloc.isSignedIn();
+    setState(() => isUserValid = userState);
+    getData(srchTxt);
   }
 
   toggleSpinner() {
@@ -1049,49 +1071,14 @@ class AcceptBidState extends State<AcceptBid> {
     });
   }
 
-  void setRide(RideModel model) async {
+  getData(String? srchTxt) async {
     toggleSpinner();
-    // ignore: prefer_typing_uninitialized_variables
-    var userData;
-    userData = await authBloc.setRide(model);
-    if (userData == true) {
-      sendMessage("Your ride is confirmed.");
-      showMessage(true, "success",
-          "Ride is confirmed, please keep checking your Inbox for further notifications.");
-    } else {
-      showMessage(
-          true, "error", "something went wrong, please contact your Admin.");
-    }
+    // var res = await authBloc.getData("Rides", "-");
+    var res = await authBloc.getBidsForRide(widget.docId);
+    setState(() {
+      results = res;
+    });
     toggleSpinner();
-  }
-
-  void setBid(BidModel model) async {
-    toggleSpinner();
-    // ignore: prefer_typing_uninitialized_variables
-    var userData;
-    userData = await authBloc.setBid("Bide", model);
-    if (userData == true) {
-      sendMessage("Your Bid is accepted.");
-      showMessage(true, "success",
-          "Ride is confirmed, please keep checking your Inbox for further notifications.");
-    } else {
-      showMessage(
-          true, "error", "something went wrong, please contact your Admin.");
-    }
-    toggleSpinner();
-  }
-
-  void sendMessage(String msg) async {
-    var username = await authBloc.getUser();
-    // storing user uid/objectId from users class, as a field into message record
-    msgModel.dttm = DateTime.now().toString();
-    msgModel.uid =
-        (username?.get("objectId") == null) ? "-" : username?.get("objectId");
-    msgModel.to = "-";
-    msgModel.message = msg;
-
-    // ignore: prefer_typing_uninitialized_variables
-    await authBloc.setMessage(msgModel);
   }
 
   @override
@@ -1103,210 +1090,195 @@ class AcceptBidState extends State<AcceptBid> {
             child: Container(
                 margin: const EdgeInsets.all(20.0),
                 child: (isUserValid == true)
-                    ? userForm(context)
+                    ? bidHistory(context)
                     : loginPage(context))));
   }
 
-  Widget userForm(BuildContext context) {
-    return Form(
-      key: _formKey,
-      autovalidateMode: AutovalidateMode.onUserInteraction,
-      onChanged: () =>
-          setState(() => _btnEnabled = _formKey.currentState!.validate()),
-      child: SingleChildScrollView(
-        child: Center(
-          child: SizedBox(
-            width: 400,
-            child: Column(
-              children: <Widget>[
-                // const Image(image: AssetImage('../assets/afronalalogo.png'), width: 200, height: 200,),
-                SizedBox(
-                  width: 300,
-                  child: Row(
-                    children: [
-                      const Text(
-                        "Bids",
-                        style: cBodyText,
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.info),
-                        color: Colors.orangeAccent,
-                        tooltip: 'Important',
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                              content: Text(
-                                  'Once your ride and bid is confirmed, your ride can not be changed.')));
-                        },
-                      ),
-                      const SizedBox(
-                        width: 5,
-                      ),
-                      ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/rides',
-                            );
+  Widget bidHistory(BuildContext context) {
+    return CustomScrollView(
+      // scrollDirection: Axis.vertical,
+      slivers: <Widget>[
+        SliverPadding(
+          padding: const EdgeInsets.all(20.0),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate(
+              <Widget>[
+                Row(
+                  children: [
+                    Container(
+                        width: 300.0,
+                        margin: const EdgeInsets.only(top: 25.0),
+                        child: TextFormField(
+                          cursorColor: Colors.blueAccent,
+                          keyboardType: TextInputType.emailAddress,
+                          maxLength: 50,
+                          obscureText: false,
+                          onChanged: (value) => srchTxt = value,
+                          validator: (value) {
+                            return Validators().evalChar(value!);
                           },
-                          child: const Text('back')),
+                          // onSaved: (value) => _email = value,
+                          decoration: InputDecoration(
+                            // icon: const Icon(Icons.email),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16.0)),
+                            hintText: 'bids',
+                            labelText: 'search all bids',
+                            // errorText: snapshot.error,
+                          ),
+                        )),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        getData(srchTxt);
+                      },
+                      child: const Icon(Icons.search, color: Colors.blueAccent),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        // Navigator.push(
+                        //   context,
+                        //   CupertinoPageRoute(
+                        //       builder: (context) => const AddUser()),
+                        // );
+                        Navigator.pushNamed(
+                          context,
+                          '/rides',
+                        );
+                      },
+                      child:
+                          const Icon(Icons.backspace, color: Colors.blueAccent),
+                    ),
+                  ],
+                ),
+                const Text(
+                  "all bids for ride",
+                  style: cSuccessText,
+                ),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columns: const <DataColumn>[
+                      DataColumn(
+                        label: Expanded(
+                          child: Text(
+                            'Date',
+                            style: TextStyle(
+                                fontStyle: FontStyle.italic,
+                                color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Expanded(
+                          child: Text(
+                            'bid',
+                            style: TextStyle(
+                                fontStyle: FontStyle.italic,
+                                color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Expanded(
+                          child: Text(
+                            'message',
+                            style: TextStyle(
+                                fontStyle: FontStyle.italic,
+                                color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Expanded(
+                          child: Text(
+                            'Action',
+                            style: TextStyle(
+                                fontStyle: FontStyle.italic,
+                                color: Colors.grey),
+                          ),
+                        ),
+                      ),
                     ],
+                    rows: results
+                        .map(
+                          (res) => DataRow(cells: [
+                            DataCell(
+                              Row(
+                                children: [
+                                  Text(
+                                    res["rideDttm"].toString(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            DataCell(
+                              Text(
+                                "${res["bid"].toString()}...",
+                              ),
+                            ),
+                            DataCell(
+                              Text(
+                                "${res["message"].toString()}...",
+                              ),
+                            ),
+                            DataCell(
+                              Row(
+                                children: [
+                                  // IconButton(
+                                  //   // iconSize: 20.0,
+                                  //   onPressed: () {
+                                  //     showAlertDialog1(context, res);
+                                  //   },
+                                  //   icon: const Icon(Icons.zoom_in,
+                                  //       color: Colors.blue),
+                                  //   tooltip: 'Details',
+                                  // ),
+                                  // const SizedBox(
+                                  //   width: 10,
+                                  // ),
+                                  IconButton(
+                                    icon: const Icon(Icons.handshake),
+                                    color: Colors.green,
+                                    tooltip: 'Accept Bid',
+                                    onPressed: () {
+                                      showAlertDialog1(context, res);
+                                    },
+                                  ),
+                                  // const SizedBox(
+                                  //   width: 10,
+                                  // ),
+                                  // IconButton(
+                                  //   icon: const Icon(Icons.edit),
+                                  //   color: Colors.orangeAccent,
+                                  //   tooltip: 'Edit',
+                                  //   onPressed: () {
+                                  //     showAlertDialog1(context, res);
+                                  //   },
+                                  // ),
+                                ],
+                              ),
+                            )
+                          ]),
+                        )
+                        .toList(),
                   ),
                 ),
-                Row(
-                  children: [
-                    const Text(
-                      "Ride Date : ",
-                      style: cNavText,
-                    ),
-                    Flexible(child: Text(rideModel.dttm)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const Text(
-                      "From : ",
-                      style: cNavText,
-                    ),
-                    Flexible(child: Text(rideModel.from)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const Text(
-                      "To : ",
-                      style: cNavText,
-                    ),
-                    Flexible(child: Text(rideModel.to)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const Text(
-                      "Message : ",
-                      style: cNavText,
-                    ),
-                    Flexible(child: Text(rideModel.message)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const Text(
-                      "Load Type : ",
-                      style: cNavText,
-                    ),
-                    Flexible(child: Text(rideModel.loadType)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const Text(
-                      "Ride Status : ",
-                      style: cNavText,
-                    ),
-                    Flexible(child: Text(rideModel.status)),
-                  ],
-                ),
-                CustomSpinner(toggleSpinner: spinnerVisible, key: null),
-                CustomMessage(
-                  toggleMessage: messageVisible,
-                  toggleMessageType: messageType,
-                  toggleMessageTxt: messageTxt,
-                  key: null,
-                ),
-                Container(
-                  margin: const EdgeInsets.only(top: 15.0),
-                ),
-                // signinSubmitBtn(context, authBloc),
-                Column(
-                  children: [
-                    // showAlertDialog3(context),
-                    // sendBtn(context),
-                    // const SizedBox(
-                    //   width: 40,
-                    //   height: 10,
-                    // ),
-                    SizedBox(
-                      width: 200,
-                      child: CheckboxListTile(
-                        value: _completeEnabled,
-                        onChanged: (newValue) =>
-                            setState(() => _completeEnabled = !_completeEnabled),
-                        title: const Text("complete ride"),
-                      ),
-                    ),
-                    completeBtn(context),
-                  ],
-                ),
+                results.isEmpty
+                    ? const Text("no bids data found.")
+                    : const Text(""),
               ],
             ),
           ),
         ),
-      ),
+      ],
     );
   }
-
-  // Widget sendBtn(context) {
-  //   return ElevatedButton(
-  //       onPressed: _btnEnabled == true ? () => setRide(model) : null,
-  //       child: const Text('Update'));
-  // }
-
-  Widget completeBtn(context) {
-    return ElevatedButton(
-        onPressed: _completeEnabled == true
-            ? () {
-                rideModel.status = "complete";
-                setRide(rideModel);
-                sendMessage("Your ride is marked complete now.");
-              }
-            : null,
-        // onPressed: () {
-        //   model.status = "cancelled";
-        //   setRide(model);
-        // },
-        // _btnEnabled == true ? () => setRide(model) : null,
-        child: const Text('Complete Ride'));
-  }
-
-  // showAlertDialog3(BuildContext context) {
-  //   // set up the buttons
-  //   Widget cancelButton = TextButton(
-  //     child: const Text("cancel Ride"),
-  //     onPressed: () {
-  //       model.status = "cancelled";
-  //       setRide(model);
-  //       Navigator.pop(context);
-  //       // Navigator.push(
-  //       //       context,
-  //       //       CupertinoPageRoute(builder: (context) => setRide(model)),
-  //       //     );
-  //     },
-  //   );
-  //   Widget continueButton = TextButton(
-  //     child: const Text("close"),
-  //     onPressed: () {
-  //       // deleteData(res["objectId"]);
-  //       Navigator.pop(context);
-  //     },
-  //   );
-  //   // set up the AlertDialog
-  //   AlertDialog alert = AlertDialog(
-  //     title: const Text("Please confirm"),
-  //     content: const Text("do you really want to cancel this ride?"),
-  //     actions: [cancelButton, continueButton],
-  //   );
-
-  //   // show the dialog
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return alert;
-  //     },
-  //   );
-  // }
 
   Widget loginPage(BuildContext context) {
     return Center(
@@ -1337,7 +1309,483 @@ class AcceptBidState extends State<AcceptBid> {
       ),
     );
   }
+
+  showAlertDialog1(BuildContext context, res) {
+    // set up the buttons
+    Widget cancelButton = TextButton(
+      child: const Text("Accept Bid"),
+      onPressed: () {
+        print(res["objectId"]);
+        Navigator.pop(context);
+        // Navigator.push(
+        //   context,
+        //   CupertinoPageRoute(
+        //       builder: (context) => EditBid(
+        //             docId: res["objectId"],
+        //           )),
+        // );
+      },
+    );
+    Widget InfoButton = TextButton(
+      child: Text(res['status']),
+      onPressed: () {
+        Navigator.pop(context);
+        // Navigator.push(
+        //       context,
+        //       CupertinoPageRoute(builder: (context) => EditRide(docId: res["objectId"],)),
+        //     );
+      },
+    );
+    Widget continueButton = TextButton(
+      child: const Text("ok"),
+      onPressed: () {
+        // deleteData(res["objectId"]);
+        Navigator.pop(context);
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text(res["rideDttm"].toString()),
+      content: const SizedBox(
+        width: 400,
+        height: 300,
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const Text(
+                  "Warning : ",
+                  style: cNavText,
+                ),
+                Text("You are about to sign a contract."),
+              ],
+            ),
+            Row(
+              children: [
+                Text("Once you accept this bid."),
+              ],
+            ),
+            Row(
+              children: [
+                Text("early cancellation fee may apply."),
+              ],
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        ((res["status"].toString() == "new") |
+                (res["status"].toString() == "-"))
+            ? cancelButton
+            : InfoButton,
+        continueButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 }
+
+// class AcceptBidState extends State<AcceptBid> {
+//   bool isUserValid = true;
+//   bool spinnerVisible = false;
+//   bool messageVisible = false;
+//   bool _btnEnabled = false;
+//   bool _completeEnabled = false;
+//   String messageTxt = "";
+//   String messageType = "";
+//   final _formKey = GlobalKey<FormState>();
+//   RideModel rideModel = RideModel(
+//       objectId: '-',
+//       uid: '-',
+//       dttm: '-',
+//       from: '-',
+//       to: '-',
+//       message: '-',
+//       loadType: '-',
+//       status: 'new');
+//   BidModel bidModel = BidModel(
+//       objectId: '-',
+//       rideId: '-',
+//       rideDttm: '-',
+//       uid: '-',
+//       driver: '-',
+//       from: '-',
+//       to: '-',
+//       status: 'new',
+//       fileURL: '-',
+//       bid: '-',
+//       message: '-');
+//   InboxModel msgModel = InboxModel(
+//       dttm: '-',
+//       uid: '-',
+//       to: '-',
+//       message: '-',
+//       readReceipt: false,
+//       fileURL: '-');
+
+//   @override
+//   void initState() {
+//     loadAuthState();
+//     super.initState();
+//   }
+
+//   void loadAuthState() async {
+//     // storing user uid/objectId from users class, as a field into message record
+//     var username = await authBloc.getUser();
+//     // final userState = await authBloc.isSignedIn();
+//     // setState(() => isUserValid = userState);
+//     await authBloc
+//         .isSignedIn()
+//         .then((userState) => {setState(() => isUserValid = userState)});
+//     // final rideData = await authBloc.getDoc("Rides", widget.docId);
+
+//     // if (rideData.isNotEmpty) {
+//     //   setState(() {
+//     //     rideModel.objectId = rideData[0]["objectId"];
+//     //   rideModel.uid =
+//     //       (username?.get("objectId") == null) ? "-" : username?.get("objectId");
+//     //   rideModel.dttm = rideData[0]["dttm"];
+//     //   rideModel.from = rideData[0]["from"];
+//     //   rideModel.to = rideData[0]["to"];
+//     //   rideModel.message = rideData[0]["message"];
+//     //   rideModel.loadType = rideData[0]["loadType"];
+//     //   rideModel.status = rideData[0]["status"];
+//     //   rideModel.fileURL = rideData[0]["fileURL"];
+//     //   });
+//     await authBloc.getDoc("Rides", widget.docId).then((rideData) => {
+//           if (rideData.isNotEmpty)
+//             {
+//               setState(() {
+//                 rideModel.objectId = rideData[0]["objectId"];
+//                 rideModel.uid = (username?.get("objectId") == null)
+//                     ? "-"
+//                     : username?.get("objectId");
+//                 rideModel.dttm = rideData[0]["dttm"];
+//                 rideModel.from = rideData[0]["from"];
+//                 rideModel.to = rideData[0]["to"];
+//                 rideModel.message = rideData[0]["message"];
+//                 rideModel.loadType = rideData[0]["loadType"];
+//                 rideModel.status = rideData[0]["status"];
+//               })
+//             }
+//         });
+//   }
+
+//   @override
+//   void dispose() {
+//     super.dispose();
+//   }
+
+//   toggleSpinner() {
+//     setState(() => spinnerVisible = !spinnerVisible);
+//   }
+
+//   showMessage(bool msgVisible, msgType, message) {
+//     messageVisible = msgVisible;
+//     setState(() {
+//       messageType = msgType == "error"
+//           ? cMessageType.error.toString()
+//           : cMessageType.success.toString();
+//       messageTxt = message;
+//     });
+//   }
+
+//   void setRide(RideModel model) async {
+//     toggleSpinner();
+//     // ignore: prefer_typing_uninitialized_variables
+//     var userData;
+//     userData = await authBloc.setRide(model);
+//     if (userData == true) {
+//       sendMessage("Your ride is confirmed.");
+//       showMessage(true, "success",
+//           "Ride is confirmed, please keep checking your Inbox for further notifications.");
+//     } else {
+//       showMessage(
+//           true, "error", "something went wrong, please contact your Admin.");
+//     }
+//     toggleSpinner();
+//   }
+
+//   void setBid(BidModel model) async {
+//     toggleSpinner();
+//     // ignore: prefer_typing_uninitialized_variables
+//     var userData;
+//     userData = await authBloc.setBid(model);
+//     if (userData == true) {
+//       sendMessage("Your Bid is accepted.");
+//       showMessage(true, "success",
+//           "Ride is confirmed, please keep checking your Inbox for further notifications.");
+//     } else {
+//       showMessage(
+//           true, "error", "something went wrong, please contact your Admin.");
+//     }
+//     toggleSpinner();
+//   }
+
+//   void sendMessage(String msg) async {
+//     var username = await authBloc.getUser();
+//     // storing user uid/objectId from users class, as a field into message record
+//     msgModel.dttm = DateTime.now().toString();
+//     msgModel.uid =
+//         (username?.get("objectId") == null) ? "-" : username?.get("objectId");
+//     msgModel.to = "-";
+//     msgModel.message = msg;
+
+//     // ignore: prefer_typing_uninitialized_variables
+//     await authBloc.setMessage(msgModel);
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     // AuthBloc authBloc = AuthBloc();
+//     return Scaffold(
+//         appBar: createCustomerNavBar(context, widget),
+//         body: Material(
+//             child: Container(
+//                 margin: const EdgeInsets.all(20.0),
+//                 child: (isUserValid == true)
+//                     ? userForm(context)
+//                     : loginPage(context))));
+//   }
+
+//   Widget userForm(BuildContext context) {
+//     return Form(
+//       key: _formKey,
+//       autovalidateMode: AutovalidateMode.onUserInteraction,
+//       onChanged: () =>
+//           setState(() => _btnEnabled = _formKey.currentState!.validate()),
+//       child: SingleChildScrollView(
+//         child: Center(
+//           child: SizedBox(
+//             width: 400,
+//             child: Column(
+//               children: <Widget>[
+//                 // const Image(image: AssetImage('../assets/afronalalogo.png'), width: 200, height: 200,),
+//                 SizedBox(
+//                   width: 300,
+//                   child: Row(
+//                     children: [
+//                       const Text(
+//                         "Bids",
+//                         style: cBodyText,
+//                       ),
+//                       const SizedBox(
+//                         width: 10,
+//                       ),
+//                       IconButton(
+//                         icon: const Icon(Icons.info),
+//                         color: Colors.orangeAccent,
+//                         tooltip: 'Important',
+//                         onPressed: () {
+//                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+//                               content: Text(
+//                                   'Once your ride and bid is confirmed, your ride can not be changed.')));
+//                         },
+//                       ),
+//                       const SizedBox(
+//                         width: 5,
+//                       ),
+//                       ElevatedButton(
+//                           onPressed: () {
+//                             Navigator.pushNamed(
+//                               context,
+//                               '/rides',
+//                             );
+//                           },
+//                           child: const Text('back')),
+//                     ],
+//                   ),
+//                 ),
+//                 Row(
+//                   children: [
+//                     const Text(
+//                       "Ride Date : ",
+//                       style: cNavText,
+//                     ),
+//                     Flexible(child: Text(rideModel.dttm)),
+//                   ],
+//                 ),
+//                 Row(
+//                   children: [
+//                     const Text(
+//                       "From : ",
+//                       style: cNavText,
+//                     ),
+//                     Flexible(child: Text(rideModel.from)),
+//                   ],
+//                 ),
+//                 Row(
+//                   children: [
+//                     const Text(
+//                       "To : ",
+//                       style: cNavText,
+//                     ),
+//                     Flexible(child: Text(rideModel.to)),
+//                   ],
+//                 ),
+//                 Row(
+//                   children: [
+//                     const Text(
+//                       "Message : ",
+//                       style: cNavText,
+//                     ),
+//                     Flexible(child: Text(rideModel.message)),
+//                   ],
+//                 ),
+//                 Row(
+//                   children: [
+//                     const Text(
+//                       "Load Type : ",
+//                       style: cNavText,
+//                     ),
+//                     Flexible(child: Text(rideModel.loadType)),
+//                   ],
+//                 ),
+//                 Row(
+//                   children: [
+//                     const Text(
+//                       "Ride Status : ",
+//                       style: cNavText,
+//                     ),
+//                     Flexible(child: Text(rideModel.status)),
+//                   ],
+//                 ),
+//                 CustomSpinner(toggleSpinner: spinnerVisible, key: null),
+//                 CustomMessage(
+//                   toggleMessage: messageVisible,
+//                   toggleMessageType: messageType,
+//                   toggleMessageTxt: messageTxt,
+//                   key: null,
+//                 ),
+//                 Container(
+//                   margin: const EdgeInsets.only(top: 15.0),
+//                 ),
+//                 // signinSubmitBtn(context, authBloc),
+//                 Column(
+//                   children: [
+//                     // showAlertDialog3(context),
+//                     // sendBtn(context),
+//                     // const SizedBox(
+//                     //   width: 40,
+//                     //   height: 10,
+//                     // ),
+//                     SizedBox(
+//                       width: 200,
+//                       child: CheckboxListTile(
+//                         value: _completeEnabled,
+//                         onChanged: (newValue) => setState(
+//                             () => _completeEnabled = !_completeEnabled),
+//                         title: const Text("complete ride"),
+//                       ),
+//                     ),
+//                     completeBtn(context),
+//                   ],
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   // Widget sendBtn(context) {
+//   //   return ElevatedButton(
+//   //       onPressed: _btnEnabled == true ? () => setRide(model) : null,
+//   //       child: const Text('Update'));
+//   // }
+
+//   Widget completeBtn(context) {
+//     return ElevatedButton(
+//         onPressed: _completeEnabled == true
+//             ? () {
+//                 rideModel.status = "complete";
+//                 setRide(rideModel);
+//                 sendMessage("Your ride is marked complete now.");
+//               }
+//             : null,
+//         // onPressed: () {
+//         //   model.status = "cancelled";
+//         //   setRide(model);
+//         // },
+//         // _btnEnabled == true ? () => setRide(model) : null,
+//         child: const Text('Complete Ride'));
+//   }
+
+//   // showAlertDialog3(BuildContext context) {
+//   //   // set up the buttons
+//   //   Widget cancelButton = TextButton(
+//   //     child: const Text("cancel Ride"),
+//   //     onPressed: () {
+//   //       model.status = "cancelled";
+//   //       setRide(model);
+//   //       Navigator.pop(context);
+//   //       // Navigator.push(
+//   //       //       context,
+//   //       //       CupertinoPageRoute(builder: (context) => setRide(model)),
+//   //       //     );
+//   //     },
+//   //   );
+//   //   Widget continueButton = TextButton(
+//   //     child: const Text("close"),
+//   //     onPressed: () {
+//   //       // deleteData(res["objectId"]);
+//   //       Navigator.pop(context);
+//   //     },
+//   //   );
+//   //   // set up the AlertDialog
+//   //   AlertDialog alert = AlertDialog(
+//   //     title: const Text("Please confirm"),
+//   //     content: const Text("do you really want to cancel this ride?"),
+//   //     actions: [cancelButton, continueButton],
+//   //   );
+
+//   //   // show the dialog
+//   //   showDialog(
+//   //     context: context,
+//   //     builder: (BuildContext context) {
+//   //       return alert;
+//   //     },
+//   //   );
+//   // }
+
+//   Widget loginPage(BuildContext context) {
+//     return Center(
+//       child: Column(
+//         children: [
+//           const Chip(
+//               avatar: CircleAvatar(
+//                 backgroundColor: Colors.grey,
+//                 child: Icon(
+//                   Icons.warning,
+//                   color: Colors.red,
+//                 ),
+//               ),
+//               label: Text("please Login again, you are currently signed out.",
+//                   style: cErrorText)),
+//           const SizedBox(width: 20, height: 50),
+//           ElevatedButton(
+//             child: const Text('Login'),
+//             // color: Colors.blue,
+//             onPressed: () {
+//               Navigator.pushNamed(
+//                 context,
+//                 '/',
+//               );
+//             },
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class SavePage extends StatefulWidget {
   final String docType;
